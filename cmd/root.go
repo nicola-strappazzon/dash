@@ -3,8 +3,10 @@ package cmd
 import (
 	"context"
 
-	elasticsearchcmd "github.com/nicola-strappazzon/dash/cmd/elasticsearch"
+	"github.com/nicola-strappazzon/dash/cmd/clickhouse"
+	"github.com/nicola-strappazzon/dash/cmd/elasticsearch"
 	"github.com/nicola-strappazzon/dash/internal/command"
+
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +24,8 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	cmd.PersistentFlags().BoolVarP(&opts.Clear, "clear", "c", false, "clear terminal before each run")
 
 	cmd.AddCommand(
-		elasticsearchcmd.NewCommand(ctx, opts),
+		clickhouse.NewCommand(ctx, opts),
+		elasticsearch.NewCommand(ctx, opts),
 		newVersionCommand(ctx, opts),
 	)
 
