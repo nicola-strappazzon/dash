@@ -17,9 +17,18 @@ type ThreadPool struct {
 
 // ThreadPools fetches _cat/thread_pool for the "write" pool.
 func (e *Elasticsearch) ThreadPools(ctx context.Context) ([]ThreadPool, error) {
+	return e.threadPools(ctx, "write")
+}
+
+// SearchThreadPools fetches _cat/thread_pool for the "search" pool.
+func (e *Elasticsearch) SearchThreadPools(ctx context.Context) ([]ThreadPool, error) {
+	return e.threadPools(ctx, "search")
+}
+
+func (e *Elasticsearch) threadPools(ctx context.Context, name string) ([]ThreadPool, error) {
 	res, err := e.client.Cat.ThreadPool(
 		e.client.Cat.ThreadPool.WithContext(ctx),
-		e.client.Cat.ThreadPool.WithThreadPoolPatterns("write"),
+		e.client.Cat.ThreadPool.WithThreadPoolPatterns(name),
 		e.client.Cat.ThreadPool.WithFormat("json"),
 		e.client.Cat.ThreadPool.WithH("node_name", "name", "active", "queue", "rejected", "size"),
 	)

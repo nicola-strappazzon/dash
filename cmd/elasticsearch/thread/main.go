@@ -31,6 +31,7 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd.AddCommand(
 		newShowCommand(ctx, opts),
 		newHotCommand(ctx, opts),
+		newPoolCommand(ctx, opts),
 	)
 
 	return cmd
