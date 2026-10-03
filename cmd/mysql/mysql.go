@@ -3,9 +3,11 @@ package mysql
 import (
 	"context"
 
+	"github.com/nicola-strappazzon/dash/cmd/mysql/databases"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/health"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/innodb"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/internal/runner"
+	"github.com/nicola-strappazzon/dash/cmd/mysql/status"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/variables"
 	"github.com/nicola-strappazzon/dash/internal/command"
 	"github.com/spf13/cobra"
@@ -13,7 +15,7 @@ import (
 
 func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mysql [health|innodb|variables...]",
+		Use:   "mysql [databases|health|innodb|status|variables...]",
 		Short: "MySQL dashboard",
 		Args:  cobra.ArbitraryArgs,
 		RunE: command.Repeat(ctx, opts, func(cmd *cobra.Command, args []string) error {
@@ -34,8 +36,10 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd.PersistentFlags().BoolVar(&opts.MySQL.InsecureTLS, "insecure-skip-verify", false, "skip MySQL TLS certificate verification")
 
 	cmd.AddCommand(
+		databases.NewCommand(ctx, opts),
 		health.NewCommand(ctx, opts),
 		innodb.NewCommand(ctx, opts),
+		status.NewCommand(ctx, opts),
 		variables.NewCommand(ctx, opts),
 	)
 	return cmd
