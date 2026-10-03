@@ -20,4 +20,12 @@ type Options struct {
 		InsecureTLS        bool
 		SnapshotRepository string
 	}
+	MySQL struct {
+		Host        string
+		Username    string
+		Password    string
+		Database    string
+		TLS         bool
+		InsecureTLS bool
+	}
 }

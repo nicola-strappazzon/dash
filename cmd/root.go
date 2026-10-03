@@ -5,6 +5,7 @@ import (
 
 	"github.com/nicola-strappazzon/dash/cmd/clickhouse"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch"
+	"github.com/nicola-strappazzon/dash/cmd/mysql"
 	"github.com/nicola-strappazzon/dash/internal/command"
 
 	"github.com/spf13/cobra"
@@ -26,6 +27,7 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	cmd.AddCommand(
 		clickhouse.NewCommand(ctx, opts),
 		elasticsearch.NewCommand(ctx, opts),
+		mysql.NewCommand(ctx, opts),
 		newVersionCommand(ctx, opts),
 	)
 
