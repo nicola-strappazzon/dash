@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"testing"
-	"time"
 )
 
 func TestEvaluateHealth(t *testing.T) {
@@ -77,34 +76,5 @@ func TestEvaluateAdvancedHealth(t *testing.T) {
 		if checks[i].Status != status {
 			t.Errorf("check %q status = %q, want %q", checks[i].Name, checks[i].Status, status)
 		}
-	}
-}
-
-func TestEvaluateHistoryListLength(t *testing.T) {
-	if got := evaluateHistoryListLength(10_001).Status; got != HealthWarning {
-		t.Errorf("status = %q, want %q", got, HealthWarning)
-	}
-	if got := evaluateHistoryListLength(100_001).Status; got != HealthCritical {
-		t.Errorf("status = %q, want %q", got, HealthCritical)
-	}
-}
-
-func TestDeadlockTracker(t *testing.T) {
-	tracker := &DeadlockTracker{}
-	start := time.Date(2026, 10, 3, 12, 0, 0, 0, time.UTC)
-
-	first := tracker.Check(10, start)
-	if first.Display != "10 since startup" || first.Status != HealthOK {
-		t.Fatalf("first check = %#v", first)
-	}
-
-	second := tracker.Check(11, start.Add(5*time.Minute))
-	if second.Status != HealthWarning || second.Display != "+1 (0.20/min)" {
-		t.Fatalf("second check = %#v", second)
-	}
-
-	reset := tracker.Check(2, start.Add(10*time.Minute))
-	if reset.Status != HealthOK || reset.Display != "2 since restart" {
-		t.Fatalf("reset check = %#v", reset)
 	}
 }

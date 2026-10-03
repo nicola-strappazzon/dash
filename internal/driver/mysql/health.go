@@ -4,10 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type Status string
@@ -27,65 +25,8 @@ type HealthCheck struct {
 }
 
 type HealthReport struct {
-	Checks       []HealthCheck
-	Version      string
-	Deadlocks    uint64
-	HasDeadlocks bool
-}
-
-// DeadlockTracker turns MySQL's cumulative Innodb_deadlocks counter into a
-// rate between dashboard refreshes.
-type DeadlockTracker struct {
-	last       uint64
-	observedAt time.Time
-	ready      bool
-}
-
-func (t *DeadlockTracker) Check(total uint64, now time.Time) HealthCheck {
-	if !t.ready {
-		t.last = total
-		t.observedAt = now
-		t.ready = true
-		return HealthCheck{
-			Name:      "InnoDB deadlocks",
-			Display:   fmt.Sprintf("%d since startup", total),
-			Status:    HealthOK,
-			Threshold: "rate available with --watch",
-		}
-	}
-
-	elapsed := now.Sub(t.observedAt)
-	if total < t.last {
-		t.last = total
-		t.observedAt = now
-		return HealthCheck{
-			Name:      "InnoDB deadlocks",
-			Display:   fmt.Sprintf("%d since restart", total),
-			Status:    HealthOK,
-			Threshold: "counter reset detected",
-		}
-	}
-	delta := total - t.last
-	rate := 0.0
-	if elapsed > 0 {
-		rate = float64(delta) / elapsed.Minutes()
-	}
-	t.last = total
-	t.observedAt = now
-
-	status := HealthOK
-	if rate >= 1 {
-		status = HealthCritical
-	} else if rate > 0 {
-		status = HealthWarning
-	}
-	return HealthCheck{
-		Name:      "InnoDB deadlocks",
-		Value:     rate,
-		Display:   fmt.Sprintf("+%d (%.2f/min)", delta, rate),
-		Status:    status,
-		Threshold: "warning >0/min, critical >=1/min",
-	}
+	Checks  []HealthCheck
+	Version string
 }
 
 // HealthSnapshot contains the raw server counters used to calculate health
@@ -110,7 +51,6 @@ var StatusVariables = []string{
 	"Innodb_buffer_pool_pages_total",
 	"Innodb_log_waits",
 	"Innodb_log_writes",
-	"Innodb_deadlocks",
 	"Threads_cached",
 	"Open_files",
 	"Sort_merge_passes",
@@ -128,8 +68,6 @@ var healthConfigVariables = []string{
 	"temptable_max_ram",
 	"innodb_redo_log_capacity",
 }
-
-var historyListLengthPattern = regexp.MustCompile(`History list length (\d+)`)
 
 // Health collects the server counters once and evaluates the dashboard checks.
 func (m *MySQL) Health(ctx context.Context) (HealthReport, error) {
@@ -149,13 +87,6 @@ func (m *MySQL) Health(ctx context.Context) (HealthReport, error) {
 	}
 
 	checks := EvaluateHealth(HealthSnapshot{Status: status, Variables: variables})
-	historyListLength, found, err := m.historyListLength(ctx)
-	if err != nil {
-		return HealthReport{}, err
-	}
-	if found {
-		checks = append(checks, evaluateHistoryListLength(historyListLength))
-	}
 	replication, isReplica, err := m.Replication(ctx)
 	if err != nil {
 		return HealthReport{}, err
@@ -164,12 +95,9 @@ func (m *MySQL) Health(ctx context.Context) (HealthReport, error) {
 		checks = append(checks, replication...)
 	}
 
-	deadlocks, hasDeadlocks := status["Innodb_deadlocks"]
 	return HealthReport{
-		Checks:       checks,
-		Version:      version,
-		Deadlocks:    uint64(deadlocks),
-		HasDeadlocks: hasDeadlocks,
+		Checks:  checks,
+		Version: version,
 	}, nil
 }
 
@@ -180,23 +108,6 @@ func (m *MySQL) Version(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("reading MySQL version: %w", err)
 	}
 	return version, nil
-}
-
-func (m *MySQL) historyListLength(ctx context.Context) (int64, bool, error) {
-	var engineType, name, output string
-	if err := m.db.QueryRowContext(ctx, "SHOW ENGINE INNODB STATUS").Scan(&engineType, &name, &output); err != nil {
-		return 0, false, fmt.Errorf("reading InnoDB status: %w", err)
-	}
-
-	match := historyListLengthPattern.FindStringSubmatch(output)
-	if match == nil {
-		return 0, false, nil
-	}
-	value, err := strconv.ParseInt(match[1], 10, 64)
-	if err != nil {
-		return 0, false, fmt.Errorf("parsing InnoDB history list length: %w", err)
-	}
-	return value, true, nil
 }
 
 // EvaluateHealth calculates the checks that can be derived from a snapshot.
@@ -392,22 +303,6 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 	}
 
 	return checks
-}
-
-func evaluateHistoryListLength(length int64) HealthCheck {
-	status := HealthOK
-	if length > 100_000 {
-		status = HealthCritical
-	} else if length > 10_000 {
-		status = HealthWarning
-	}
-	return HealthCheck{
-		Name:      "History list length",
-		Value:     float64(length),
-		Display:   fmt.Sprintf("%d", length),
-		Status:    status,
-		Threshold: "warning >10k, critical >100k",
-	}
 }
 
 func queryGlobalValues(ctx context.Context, db *sql.DB, statement string, names []string) (map[string]float64, error) {

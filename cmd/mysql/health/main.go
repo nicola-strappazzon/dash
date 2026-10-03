@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/fatih/color"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/internal/runner"
@@ -15,13 +14,10 @@ import (
 )
 
 func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
-	tracker := &mysql.DeadlockTracker{}
-	return runner.SectionCommand(ctx, opts, "health", "Show MySQL health", func(ctx context.Context, db *mysql.MySQL) error {
-		return Render(ctx, db, tracker)
-	})
+	return runner.SectionCommand(ctx, opts, "health", "Show MySQL health", Render)
 }
 
-func Render(ctx context.Context, db *mysql.MySQL, tracker *mysql.DeadlockTracker) error {
+func Render(ctx context.Context, db *mysql.MySQL) error {
 	report, err := db.Health(ctx)
 	if err != nil {
 		return err
@@ -32,9 +28,6 @@ func Render(ctx context.Context, db *mysql.MySQL, tracker *mysql.DeadlockTracker
 		Display: report.Version,
 		Status:  mysql.HealthOK,
 	}}, checks...)
-	if report.HasDeadlocks {
-		checks = append(checks, tracker.Check(report.Deadlocks, time.Now()))
-	}
 
 	tbl := table.New()
 	tbl.Title("MySQL health")
