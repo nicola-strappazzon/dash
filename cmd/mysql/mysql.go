@@ -5,6 +5,7 @@ import (
 
 	"github.com/nicola-strappazzon/dash/cmd/mysql/databases"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/health"
+	"github.com/nicola-strappazzon/dash/cmd/mysql/indexes"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/innodb"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/internal/runner"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/status"
@@ -16,7 +17,7 @@ import (
 
 func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mysql [databases|health|innodb|status|tables|variables...]",
+		Use:   "mysql [databases|health|indexes|innodb|status|tables|variables...]",
 		Short: "MySQL dashboard",
 		Args:  cobra.ArbitraryArgs,
 		RunE: command.Repeat(ctx, opts, func(cmd *cobra.Command, args []string) error {
@@ -39,6 +40,7 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd.AddCommand(
 		databases.NewCommand(ctx, opts),
 		health.NewCommand(ctx, opts),
+		indexes.NewCommand(ctx, opts),
 		innodb.NewCommand(ctx, opts),
 		status.NewCommand(ctx, opts),
 		tables.NewCommand(ctx, opts),

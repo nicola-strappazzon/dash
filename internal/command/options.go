@@ -25,6 +25,7 @@ type Options struct {
 		Username     string
 		Password     string
 		Database     string
+		Table        string
 		TLS          bool
 		InsecureTLS  bool
 		VariableLike string
