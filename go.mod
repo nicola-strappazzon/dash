@@ -6,11 +6,13 @@ require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.40.1
 	github.com/elastic/go-elasticsearch/v8 v8.19.6
 	github.com/fatih/color v1.19.0
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/nicola-strappazzon/go-table v0.0.0-20260717080631-f327e1643619
 	github.com/spf13/cobra v1.10.2
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/ClickHouse/ch-go v0.67.0 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.9.0 // indirect
