@@ -25,6 +25,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 
 	tbl := table.New()
 	tbl.Title("Cluster nodes")
+	tbl.TitleSeparator(false)
 	for _, n := range nodes {
 		tbl.Add(
 			n.ID,

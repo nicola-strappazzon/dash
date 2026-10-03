@@ -58,6 +58,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 
 	tbl := table.New()
 	tbl.Title("Indices")
+	tbl.TitleSeparator(false)
 	for _, i := range indices {
 		tbl.Add(
 			i.Name,

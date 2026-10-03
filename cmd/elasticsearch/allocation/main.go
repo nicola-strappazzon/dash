@@ -25,6 +25,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 
 	tbl := table.New()
 	tbl.Title("Allocation")
+	tbl.TitleSeparator(false)
 	for _, a := range allocations {
 		tbl.Add(
 			a.Node,

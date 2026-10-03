@@ -69,6 +69,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 
 	tbl := table.New()
 	tbl.Title("Allocation Settings")
+	tbl.TitleSeparator(false)
 	seen := map[string]bool{}
 	addRows(tbl, "persistent", cs.Persistent, seen)
 	addRows(tbl, "transient", cs.Transient, seen)

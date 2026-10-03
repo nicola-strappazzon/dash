@@ -45,6 +45,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 
 	tbl := table.New()
 	tbl.Title("Shards")
+	tbl.TitleSeparator(false)
 	for _, s := range shards {
 		if nodeFilter != "" && s.Node != nodeFilter {
 			continue

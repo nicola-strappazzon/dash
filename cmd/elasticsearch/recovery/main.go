@@ -26,6 +26,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 
 	tbl := table.New()
 	tbl.Title("Recovery")
+	tbl.TitleSeparator(false)
 	for _, r := range recoveries {
 		tbl.Add(
 			r.Index,
