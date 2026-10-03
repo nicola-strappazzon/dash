@@ -6,13 +6,14 @@ import (
 	"github.com/nicola-strappazzon/dash/cmd/mysql/health"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/innodb"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/internal/runner"
+	"github.com/nicola-strappazzon/dash/cmd/mysql/variables"
 	"github.com/nicola-strappazzon/dash/internal/command"
 	"github.com/spf13/cobra"
 )
 
 func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mysql [health|innodb...]",
+		Use:   "mysql [health|innodb|variables...]",
 		Short: "MySQL dashboard",
 		Args:  cobra.ArbitraryArgs,
 		RunE: command.Repeat(ctx, opts, func(cmd *cobra.Command, args []string) error {
@@ -35,6 +36,7 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd.AddCommand(
 		health.NewCommand(ctx, opts),
 		innodb.NewCommand(ctx, opts),
+		variables.NewCommand(ctx, opts),
 	)
 	return cmd
 }
