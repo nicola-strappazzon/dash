@@ -10,6 +10,7 @@ import (
 	"github.com/nicola-strappazzon/dash/cmd/mysql/innodb"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/internal/runner"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/overflow"
+	"github.com/nicola-strappazzon/dash/cmd/mysql/processlist"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/status"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/tables"
 	"github.com/nicola-strappazzon/dash/cmd/mysql/variables"
@@ -19,7 +20,7 @@ import (
 
 func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mysql [databases|foreign-keys|health|indexes|innodb|overflow|status|tables|variables...]",
+		Use:   "mysql [databases|foreign-keys|health|indexes|innodb|overflow|processlist|status|tables|variables...]",
 		Short: "MySQL dashboard",
 		Args:  cobra.ArbitraryArgs,
 		RunE: command.Repeat(ctx, opts, func(cmd *cobra.Command, args []string) error {
@@ -46,6 +47,7 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 		indexes.NewCommand(ctx, opts),
 		innodb.NewCommand(ctx, opts),
 		overflow.NewCommand(ctx, opts),
+		processlist.NewCommand(ctx, opts),
 		status.NewCommand(ctx, opts),
 		tables.NewCommand(ctx, opts),
 		variables.NewCommand(ctx, opts),
