@@ -10,7 +10,8 @@ import (
 )
 
 type Elasticsearch struct {
-	client *elasticsearch.Client
+	client    *elasticsearch.Client
+	transport *http.Transport
 }
 
 type Config struct {
@@ -23,27 +24,32 @@ type Config struct {
 const elasticsearchTimeout = 3 * time.Second
 
 func New(cfg Config) (*Elasticsearch, error) {
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   elasticsearchTimeout,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: cfg.InsecureSkipVerify},
+		TLSHandshakeTimeout:   elasticsearchTimeout,
+		ResponseHeaderTimeout: elasticsearchTimeout,
+	}
 	client, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: cfg.Addresses,
 		Username:  cfg.Username,
 		Password:  cfg.Password,
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   elasticsearchTimeout,
-				KeepAlive: 30 * time.Second,
-			}).DialContext,
-			TLSClientConfig:       &tls.Config{InsecureSkipVerify: cfg.InsecureSkipVerify},
-			TLSHandshakeTimeout:   elasticsearchTimeout,
-			ResponseHeaderTimeout: elasticsearchTimeout,
-		},
+		Transport: transport,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &Elasticsearch{client: client}, nil
+	return &Elasticsearch{client: client, transport: transport}, nil
 }
 
 func (e *Elasticsearch) Client() *elasticsearch.Client {
 	return e.client
+}
+
+func (e *Elasticsearch) Close() {
+	e.transport.CloseIdleConnections()
 }

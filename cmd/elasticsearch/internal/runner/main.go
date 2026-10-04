@@ -44,6 +44,8 @@ func RenderSections(ctx context.Context, opts *command.Options, sections []strin
 	}
 
 	return WithElasticsearch(opts, func(es *elasticsearch.Elasticsearch) error {
+		defer es.Close()
+
 		for _, section := range sections {
 			render, ok := registry[section]
 			if !ok {

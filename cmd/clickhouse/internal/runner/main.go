@@ -44,6 +44,8 @@ func RenderSections(ctx context.Context, opts *command.Options, sections []strin
 	}
 
 	return WithClickHouse(opts, func(ch *clickhouse.ClickHouse) error {
+		defer ch.Close()
+
 		for _, section := range sections {
 			render, ok := registry[section]
 			if !ok {

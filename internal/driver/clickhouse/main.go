@@ -63,3 +63,7 @@ func New(cfg Config) (*ClickHouse, error) {
 func (ch *ClickHouse) Conn() driver.Conn {
 	return ch.conn
 }
+
+func (ch *ClickHouse) Close() error {
+	return ch.conn.Close()
+}
