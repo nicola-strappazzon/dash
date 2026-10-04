@@ -32,6 +32,8 @@ it.
 12. Prefer the Go standard library and idiomatic language features over custom helpers or dependencies when they solve the problem clearly.
 13. Prefer concrete domain types with real behavior over generic frameworks. Do not introduce an abstraction merely to hold repeated data.
 14. Keep queries, parsing, and transformations explicit and easy to audit; avoid hidden execution paths and magic configuration.
+15. Do not add error handling for impossible scenarios.
+16. If you write 200 lines and it could be 50, rewrite it. Prefer fewer lines whenever clarity and required behavior are preserved.
 
 ### Before adding code
 
@@ -72,6 +74,13 @@ and boundary behavior.
 
 Learn from existing and legacy code, but do not reproduce a historical
 compromise unless its original constraint still exists.
+
+### Commit messages
+
+Use Conventional Commits: `type(scope): imperative summary`. Use the smallest
+scope that describes the change, keep the summary concise and without a final
+period, and make each commit atomic. Prefer `feat`, `fix`, `docs`, `test`,
+`refactor`, or `chore` as appropriate.
 
 ## Project-specific instructions: Dash
 
