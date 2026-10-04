@@ -34,6 +34,10 @@ it.
 14. Keep queries, parsing, and transformations explicit and easy to audit; avoid hidden execution paths and magic configuration.
 15. Do not add error handling for impossible scenarios.
 16. If you write 200 lines and it could be 50, rewrite it. Prefer fewer lines whenever clarity and required behavior are preserved.
+17. Use structs and methods to model cohesive domain concepts and their real behavior.
+18. Organize code into small, cohesive packages around domain responsibilities.
+19. Prefer composition over inheritance-style abstractions. Introduce interfaces only when there are multiple real implementations or a concrete boundary to protect.
+20. Keep data and behavior together when they belong to the same domain concept; do not create types that only wrap trivial functions.
 
 ### Before adding code
 
