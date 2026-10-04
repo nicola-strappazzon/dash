@@ -30,5 +30,6 @@ type Options struct {
 		InsecureTLS  bool
 		VariableLike string
 		StatusLike   string
+		TablesLike   string
 	}
 }

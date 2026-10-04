@@ -13,7 +13,9 @@ import (
 )
 
 func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
-	return runner.SectionCommand(ctx, opts, "tables", "List tables in a MySQL database", Render(opts))
+	cmd := runner.SectionCommand(ctx, opts, "tables", "List tables in a MySQL database", Render(opts))
+	cmd.Flags().StringVar(&opts.MySQL.TablesLike, "like", "", "filter table names with a MySQL LIKE pattern, e.g. %_old")
+	return cmd
 }
 
 func Render(opts *command.Options) runner.RenderFunc {
@@ -22,13 +24,17 @@ func Render(opts *command.Options) runner.RenderFunc {
 			return fmt.Errorf("missing MySQL database: pass --database")
 		}
 
-		tables, err := db.Tables(ctx, opts.MySQL.Database)
+		tables, err := db.Tables(ctx, opts.MySQL.Database, opts.MySQL.TablesLike)
 		if err != nil {
 			return err
 		}
 
 		tbl := table.New()
-		tbl.Title("MySQL tables · " + opts.MySQL.Database)
+		title := "MySQL tables · " + opts.MySQL.Database
+		if opts.MySQL.TablesLike != "" {
+			title += " · " + opts.MySQL.TablesLike
+		}
+		tbl.Title(title)
 		for _, tableInfo := range tables {
 			tbl.Add(
 				tableInfo.Name,

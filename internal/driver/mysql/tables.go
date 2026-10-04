@@ -15,10 +15,10 @@ type Table struct {
 	FragmentationPercent float64
 }
 
-// Tables lists base tables in database, ordered by allocated data and index
-// space.
-func (m *MySQL) Tables(ctx context.Context, database string) ([]Table, error) {
-	const query = `
+// Tables lists base tables in database, optionally filtering names with a
+// MySQL LIKE pattern, ordered by allocated data and index space.
+func (m *MySQL) Tables(ctx context.Context, database, like string) ([]Table, error) {
+	query := `
 SELECT
     t.table_name,
     COALESCE(t.engine, '') AS engine,
@@ -34,9 +34,15 @@ SELECT
 FROM information_schema.tables t
 WHERE t.table_schema = ?
   AND t.table_type = 'BASE TABLE'
-ORDER BY data_bytes + index_bytes DESC, t.table_name`
+`
+	args := []any{database}
+	if like != "" {
+		query += "  AND t.table_name LIKE ?\n"
+		args = append(args, like)
+	}
+	query += "ORDER BY data_bytes + index_bytes DESC, t.table_name"
 
-	rows, err := m.db.QueryContext(ctx, query, database)
+	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("reading MySQL tables: %w", err)
 	}
