@@ -14,15 +14,6 @@ type MySQL struct {
 	db *sql.DB
 }
 
-type Config struct {
-	Host               string
-	Username           string
-	Password           string
-	Database           string
-	TLS                bool
-	InsecureSkipVerify bool
-}
-
 const (
 	mysqlConnectTimeout = 5 * time.Second
 	mysqlReadTimeout    = 30 * time.Second

@@ -3,33 +3,9 @@ package command
 import "time"
 
 type Options struct {
-	Clear      bool
-	Watch      time.Duration
-	ClickHouse struct {
-		Host        string
-		Username    string
-		Password    string
-		TLS         bool
-		InsecureTLS bool
-		ClusterName string
-	}
-	Elasticsearch struct {
-		Address            string
-		Username           string
-		Password           string
-		InsecureTLS        bool
-		SnapshotRepository string
-	}
-	MySQL struct {
-		Host         string
-		Username     string
-		Password     string
-		Database     string
-		Table        string
-		TLS          bool
-		InsecureTLS  bool
-		VariableLike string
-		StatusLike   string
-		TablesLike   string
-	}
+	Clear         bool
+	Watch         time.Duration
+	ClickHouse    ClickHouseOptions
+	Elasticsearch ElasticsearchOptions
+	MySQL         MySQLOptions
 }

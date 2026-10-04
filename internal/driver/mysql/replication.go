@@ -61,29 +61,26 @@ func evaluateReplication(status map[string]string) []HealthCheck {
 		}
 	}
 	checks := []HealthCheck{{
-		Name:      "Replica IO / SQL",
-		Display:   fmt.Sprintf("%s / %s", io, sql),
-		Status:    threadStatus,
-		Threshold: "both must be Yes",
+		Name:    "Replica IO / SQL",
+		Display: fmt.Sprintf("%s / %s", io, sql),
+		Status:  threadStatus,
 	}}
 
 	rawLag := firstStatus(status, "Seconds_Behind_Source", "Seconds_Behind_Master")
 	if rawLag == "" {
 		return append(checks, HealthCheck{
-			Name:      "Replication lag",
-			Display:   "NULL",
-			Status:    HealthCritical,
-			Threshold: "ok <=30s, warning <=300s, critical >300s or NULL",
+			Name:    "Replication lag",
+			Display: "NULL",
+			Status:  HealthCritical,
 		})
 	}
 
 	lag, err := strconv.ParseFloat(rawLag, 64)
 	if err != nil {
 		return append(checks, HealthCheck{
-			Name:      "Replication lag",
-			Display:   rawLag,
-			Status:    HealthCritical,
-			Threshold: "ok <=30s, warning <=300s, critical >300s or NULL",
+			Name:    "Replication lag",
+			Display: rawLag,
+			Status:  HealthCritical,
 		})
 	}
 	lagStatus := HealthOK
@@ -93,11 +90,10 @@ func evaluateReplication(status map[string]string) []HealthCheck {
 		lagStatus = HealthWarning
 	}
 	return append(checks, HealthCheck{
-		Name:      "Replication lag",
-		Value:     lag,
-		Display:   fmt.Sprintf("%.0fs", lag),
-		Status:    lagStatus,
-		Threshold: "ok <=30s, warning <=300s, critical >300s or NULL",
+		Name:    "Replication lag",
+		Value:   lag,
+		Display: fmt.Sprintf("%.0fs", lag),
+		Status:  lagStatus,
 	})
 }
 
