@@ -38,6 +38,8 @@ it.
 18. Organize code into small, cohesive packages around domain responsibilities.
 19. Prefer composition over inheritance-style abstractions. Introduce interfaces only when there are multiple real implementations or a concrete boundary to protect.
 20. Keep data and behavior together when they belong to the same domain concept; do not create types that only wrap trivial functions.
+21. Prefer one primary domain struct per file, together with its methods, constructors, parsing, and helpers specific to that concept.
+22. Split packages into files by cohesive domain concept, not by arbitrary file size. Many small focused files are preferable to one large mixed-responsibility file.
 
 ### Before adding code
 
