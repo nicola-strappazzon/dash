@@ -41,7 +41,7 @@ func Render(opts *command.Options) runner.RenderFunc {
 				tableInfo.FragmentationPercent,
 			)
 		}
-		tbl.Column(0, table.Column{Name: "TABLE"})
+		tbl.Column(0, table.Column{Name: "TABLE", MaxWidth: 60})
 		tbl.Column(1, table.Column{Name: "ENGINE"})
 		tbl.Column(2, table.Column{Name: "ROWS", Alignment: table.Right, Width: 8})
 		tbl.Column(3, table.Column{Name: "DATA", Format: table.Bytes, Alignment: table.Right, Width: 9})
@@ -61,6 +61,7 @@ func Render(opts *command.Options) runner.RenderFunc {
 		})
 		tbl.Margin(table.Margin{Left: 2})
 		tbl.Padding(2)
+		tbl.FitWidth(table.TerminalWidth())
 		tbl.SetWidth(table.TerminalWidth())
 		tbl.Print()
 		fmt.Println("")
