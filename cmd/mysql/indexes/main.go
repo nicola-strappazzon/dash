@@ -44,14 +44,14 @@ func Render(opts *command.Options) runner.RenderFunc {
 			if index.Visible {
 				visible = "YES"
 			}
-			tbl.Add(index.Name, index.Type, unique, visible, strconv.FormatInt(index.Cardinality, 10), index.SizeBytes, mysql.FormatIndexColumns(index.Columns))
+			tbl.Add(index.Name, index.Type, unique, visible, strconv.FormatInt(index.Cardinality, 10), indexSize(index), mysql.FormatIndexColumns(index.Columns))
 		}
 		tbl.Column(0, table.Column{Name: "INDEX"})
 		tbl.Column(1, table.Column{Name: "TYPE"})
 		tbl.Column(2, table.Column{Name: "UNIQUE", Color: color.FgGreen})
 		tbl.Column(3, table.Column{Name: "VISIBLE", Color: color.FgGreen})
 		tbl.Column(4, table.Column{Name: "CARDINALITY", Alignment: table.Right})
-		tbl.Column(5, table.Column{Name: "SIZE", Format: table.Bytes, Alignment: table.Right})
+		tbl.Column(5, table.Column{Name: "SIZE", Alignment: table.Right})
 		tbl.Column(6, table.Column{Name: "COLUMNS", MaxWidth: 70})
 		tbl.Margin(table.Margin{Left: 2})
 		tbl.Padding(2)
@@ -61,4 +61,11 @@ func Render(opts *command.Options) runner.RenderFunc {
 		fmt.Println("")
 		return nil
 	}
+}
+
+func indexSize(index mysql.Index) string {
+	if !index.SizeKnown {
+		return "—"
+	}
+	return table.Field{Value: index.SizeBytes, Format: table.Bytes}.Render()
 }

@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"sort"
 	"strings"
@@ -23,18 +22,18 @@ type Index struct {
 	Unique      bool
 	Visible     bool
 	Cardinality int64
-	Comment     string
 	SizeBytes   int64
+	SizeKnown   bool
 	Columns     []IndexColumn
 }
 
 // Indexes lists each index and its indexed columns for a table. Index size is
-// read when mysql.innodb_index_stats is accessible; it remains zero otherwise.
+// read when mysql.innodb_index_stats is accessible.
 func (m *MySQL) Indexes(ctx context.Context, database, table string) ([]Index, error) {
 	const query = `
 SELECT
     index_name, index_type, non_unique, is_visible,
-    COALESCE(cardinality, 0), COALESCE(index_comment, ''),
+    COALESCE(cardinality, 0),
     seq_in_index, COALESCE(column_name, ''), COALESCE(expression, ''),
     COALESCE(collation, ''), COALESCE(sub_part, 0), COALESCE(nullable, '')
 FROM information_schema.statistics
@@ -50,11 +49,11 @@ ORDER BY index_name, seq_in_index`
 	byName := make(map[string]*Index)
 	for rows.Next() {
 		var (
-			name, indexType, visible, comment, columnName, expression, collation, nullable string
-			nonUnique                                                                      int64
-			cardinality, position, subPart                                                 int64
+			name, indexType, visible, columnName, expression, collation, nullable string
+			nonUnique                                                             int64
+			cardinality, position, subPart                                        int64
 		)
-		if err := rows.Scan(&name, &indexType, &nonUnique, &visible, &cardinality, &comment,
+		if err := rows.Scan(&name, &indexType, &nonUnique, &visible, &cardinality,
 			&position, &columnName, &expression, &collation, &subPart, &nullable); err != nil {
 			return nil, fmt.Errorf("scanning MySQL index: %w", err)
 		}
@@ -63,7 +62,7 @@ ORDER BY index_name, seq_in_index`
 		if index == nil {
 			index = &Index{
 				Name: name, Type: indexType, Unique: nonUnique == 0, Visible: visible == "YES",
-				Cardinality: cardinality, Comment: comment,
+				Cardinality: cardinality,
 			}
 			byName[name] = index
 		}
@@ -77,7 +76,8 @@ ORDER BY index_name, seq_in_index`
 	}
 
 	// This system table is InnoDB-specific and may require additional grants.
-	// Index metadata remains useful, so an unavailable size query is non-fatal.
+	// Index metadata remains useful without it; individual unknown sizes are
+	// represented by SizeKnown=false rather than a misleading zero.
 	const sizeQuery = `
 SELECT index_name, stat_value * @@innodb_page_size
 FROM mysql.innodb_index_stats
@@ -86,10 +86,11 @@ WHERE database_name = ? AND table_name = ? AND stat_name = 'size'`
 		defer sizeRows.Close()
 		for sizeRows.Next() {
 			var name string
-			var size sql.NullInt64
-			if err := sizeRows.Scan(&name, &size); err == nil && size.Valid {
+			var size int64
+			if err := sizeRows.Scan(&name, &size); err == nil {
 				if index := byName[name]; index != nil {
-					index.SizeBytes = size.Int64
+					index.SizeBytes = size
+					index.SizeKnown = true
 				}
 			}
 		}
