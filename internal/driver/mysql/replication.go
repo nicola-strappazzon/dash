@@ -9,6 +9,17 @@ import (
 // Replication returns health checks for a replica. The boolean is false when
 // the server is not configured as a replica.
 func (m *MySQL) Replication(ctx context.Context) ([]HealthCheck, bool, error) {
+	status, isReplica, err := m.replicaStatus(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+	if !isReplica {
+		return nil, false, nil
+	}
+	return evaluateReplication(status), true, nil
+}
+
+func (m *MySQL) replicaStatus(ctx context.Context) (map[string]string, bool, error) {
 	rows, err := m.db.QueryContext(ctx, "SHOW REPLICA STATUS")
 	if err != nil {
 		return nil, false, fmt.Errorf("reading MySQL replica status: %w", err)
@@ -47,7 +58,7 @@ func (m *MySQL) Replication(ctx context.Context) ([]HealthCheck, bool, error) {
 			status[column] = fmt.Sprint(value)
 		}
 	}
-	return evaluateReplication(status), true, nil
+	return status, true, nil
 }
 
 func evaluateReplication(status map[string]string) []HealthCheck {
