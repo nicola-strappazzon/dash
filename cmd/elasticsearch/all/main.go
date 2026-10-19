@@ -13,6 +13,7 @@ import (
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/shards"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/slm"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/snapshots"
+	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/tasks"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/thread"
 	"github.com/nicola-strappazzon/dash/internal/command"
 	"github.com/nicola-strappazzon/dash/internal/driver/elasticsearch"
@@ -36,6 +37,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch, snapshotReposi
 		recovery.Render,
 		snapshots.Repository(snapshotRepository),
 		slm.Render,
+		tasks.Render,
 		thread.Render,
 	} {
 		if err := render(ctx, es); err != nil {

@@ -14,6 +14,7 @@ import (
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/shards"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/slm"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/snapshots"
+	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/tasks"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/thread"
 	"github.com/nicola-strappazzon/dash/internal/command"
 	"github.com/spf13/cobra"
@@ -21,7 +22,7 @@ import (
 
 func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "elasticsearch [all|health|nodes|indices|shards|allocation|settings|recovery|snapshots|slm|thread...]",
+		Use:   "elasticsearch [all|health|nodes|indices|shards|allocation|settings|recovery|snapshots|slm|tasks|thread...]",
 		Short: "Elasticsearch dashboard",
 		Args:  cobra.ArbitraryArgs,
 		RunE: command.Repeat(ctx, opts, func(cmd *cobra.Command, args []string) error {
@@ -49,6 +50,7 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 		recovery.NewCommand(ctx, opts),
 		snapshots.NewCommand(ctx, opts),
 		slm.NewCommand(ctx, opts),
+		tasks.NewCommand(ctx, opts),
 		thread.NewCommand(ctx, opts),
 	)
 
