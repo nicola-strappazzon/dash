@@ -38,7 +38,7 @@ func printReport(ctx context.Context, report mysql.ReplicationReport) error {
 		tbl.Add(row[0], row[1])
 	}
 	tbl.Column(0, table.Column{Name: "METRIC"})
-	tbl.Column(1, table.Column{Name: "VALUE", MaxWidth: 100})
+	tbl.Column(1, table.Column{Name: "VALUE", MaxWidth: table.TerminalWidth()})
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.FitWidth(table.TerminalWidth())

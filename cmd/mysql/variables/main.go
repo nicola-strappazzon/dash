@@ -33,9 +33,10 @@ func Render(opts *command.Options) runner.RenderFunc {
 			tbl.Add(variable.Name, variable.Value)
 		}
 		tbl.Column(0, table.Column{Name: "VARIABLE"})
-		tbl.Column(1, table.Column{Name: "VALUE", Truncate: 80})
+		tbl.Column(1, table.Column{Name: "VALUE", MaxWidth: table.TerminalWidth()})
 		tbl.Margin(table.Margin{Left: 2})
 		tbl.Padding(3)
+		tbl.FitWidth(table.TerminalWidth())
 		tbl.SetWidth(table.TerminalWidth())
 		return command.Print(ctx, tbl)
 	}
