@@ -102,7 +102,7 @@ func evaluateReplication(status map[string]string) []HealthCheck {
 	}
 	return append(checks, HealthCheck{
 		Name:    "Replication lag",
-		Value:   lag,
+		Value:   &lag,
 		Display: fmt.Sprintf("%.0fs", lag),
 		Status:  lagStatus,
 	})

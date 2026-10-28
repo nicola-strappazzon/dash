@@ -44,7 +44,14 @@ func Render(opts *command.Options) runner.RenderFunc {
 			if index.Visible {
 				visible = "YES"
 			}
-			tbl.Add(index.Name, index.Type, unique, visible, strconv.FormatInt(index.Cardinality, 10), indexSize(index), mysql.FormatIndexColumns(index.Columns))
+			var size any = indexSize(index)
+			if command.Machine(ctx) {
+				size = nil
+				if index.SizeKnown {
+					size = index.SizeBytes
+				}
+			}
+			tbl.Add(index.Name, index.Type, unique, visible, strconv.FormatInt(index.Cardinality, 10), size, mysql.FormatIndexColumns(index.Columns))
 		}
 		tbl.Column(0, table.Column{Name: "INDEX"})
 		tbl.Column(1, table.Column{Name: "TYPE"})

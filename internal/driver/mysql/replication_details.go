@@ -107,7 +107,7 @@ func replicationLagCheck(value string) HealthCheck {
 	} else if lag > 30 {
 		status = HealthWarning
 	}
-	return HealthCheck{Name: "Replication lag", Value: lag, Display: fmt.Sprintf("%.0fs", lag), Status: status}
+	return HealthCheck{Name: "Replication lag", Value: &lag, Display: fmt.Sprintf("%.0fs", lag), Status: status}
 }
 
 func replicationErrorCheck(name string, errno int64, message string) HealthCheck {

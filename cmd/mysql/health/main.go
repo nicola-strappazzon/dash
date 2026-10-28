@@ -32,7 +32,11 @@ func Render(ctx context.Context, db *mysql.MySQL) error {
 	tbl.Title("MySQL health")
 	tbl.TitleSeparator(false)
 	for _, check := range checks {
-		tbl.Add(check.Name, check.Display, strings.ToUpper(string(check.Status)))
+		var value any = check.Display
+		if command.Machine(ctx) {
+			value = check.RawValue()
+		}
+		tbl.Add(check.Name, value, strings.ToUpper(string(check.Status)))
 	}
 	tbl.Column(0, table.Column{Name: "CHECK"})
 	tbl.Column(1, table.Column{Name: "VALUE", Alignment: table.Right})

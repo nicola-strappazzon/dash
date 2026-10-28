@@ -27,6 +27,25 @@ func Render(ctx context.Context, db *mysql.MySQL) error {
 
 func printOverview(ctx context.Context, status mysql.InnoDBStatus) error {
 	row := table.NewRow().Title("InnoDB")
+	if command.Machine(ctx) {
+		row.Add(table.Field{Name: "History list length", Value: status.HistoryLength})
+		row.Add(table.Field{Name: "Queries inside", Value: status.QueriesInsideInnoDB})
+		row.Add(table.Field{Name: "Queries queued", Value: status.QueriesInQueue})
+		if status.BufferPoolSizePages > 0 {
+			row.Add(table.Field{Name: "Buffer pool used pages", Value: status.BufferPoolSizePages - status.BufferPoolFreePages})
+			row.Add(table.Field{Name: "Buffer pool free pages", Value: status.BufferPoolFreePages})
+			row.Add(table.Field{Name: "Dirty pages", Value: dirtyPagePercent(status)})
+			row.Add(table.Field{Name: "Buffer pool hit rate", Value: status.BufferPoolHitRatePct})
+			row.Add(table.Field{Name: "Buffer pool reads/s", Value: status.BufferPoolReadsPerSec})
+			row.Add(table.Field{Name: "Buffer pool writes/s", Value: status.BufferPoolWritesPerSec})
+		}
+		row.Add(table.Field{Name: "Row inserts/s", Value: status.InsertsPerSec})
+		row.Add(table.Field{Name: "Row updates/s", Value: status.UpdatesPerSec})
+		row.Add(table.Field{Name: "Row deletes/s", Value: status.DeletesPerSec})
+		row.Add(table.Field{Name: "Row reads", Value: status.RowReadsPerSec})
+		row.Add(table.Field{Name: "Checkpoint age", Value: status.LogSequenceNumber - status.LastCheckpoint})
+		return command.Print(ctx, row)
+	}
 	row.Add(table.Field{
 		Name:  "History list length",
 		Value: status.HistoryLength,

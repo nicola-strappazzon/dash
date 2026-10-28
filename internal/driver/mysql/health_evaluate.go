@@ -24,7 +24,7 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 		} else if running > 10 {
 			status = HealthWarning
 		}
-		checks = append(checks, HealthCheck{Name: "Running threads", Value: running, Display: fmt.Sprintf("%.0f", running), Status: status})
+		checks = append(checks, HealthCheck{Name: "Running threads", Value: &running, Display: fmt.Sprintf("%.0f", running), Status: status})
 	}
 
 	if peak, maxConnections, ok := statusAndVariable(snapshot, "Max_used_connections", "max_connections"); ok && maxConnections > 0 {
@@ -38,7 +38,7 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 		if percentage > 25 {
 			status = HealthWarning
 		}
-		checks = append(checks, HealthCheck{Name: "Temp tables on disk", Value: percentage, Display: fmt.Sprintf("%.2f%%", percentage), Status: status})
+		checks = append(checks, HealthCheck{Name: "Temp tables on disk", Value: &percentage, Display: fmt.Sprintf("%.2f%%", percentage), Status: status})
 	}
 
 	if created, connections, ok := values(snapshot.Status, "Threads_created", "Connections"); ok && connections > 0 {
@@ -52,7 +52,7 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 		if ratio < 10 {
 			status = HealthWarning
 		}
-		checks = append(checks, HealthCheck{Name: "Thread cache ratio", Value: ratio, Display: fmt.Sprintf("%.2f%%", ratio), Status: status})
+		checks = append(checks, HealthCheck{Name: "Thread cache ratio", Value: &ratio, Display: fmt.Sprintf("%.2f%%", ratio), Status: status})
 	}
 
 	if dirty, total, ok := values(snapshot.Status, "Innodb_buffer_pool_pages_dirty", "Innodb_buffer_pool_pages_total"); ok && total > 0 {
@@ -61,7 +61,7 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 		if ratio >= 75 {
 			status = HealthWarning
 		}
-		checks = append(checks, HealthCheck{Name: "InnoDB dirty pages", Value: ratio, Display: fmt.Sprintf("%.2f%%", ratio), Status: status})
+		checks = append(checks, HealthCheck{Name: "InnoDB dirty pages", Value: &ratio, Display: fmt.Sprintf("%.2f%%", ratio), Status: status})
 	}
 
 	if waits, writes, ok := values(snapshot.Status, "Innodb_log_waits", "Innodb_log_writes"); ok && writes > 0 {
@@ -72,7 +72,7 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 		} else if ratio >= 5 {
 			status = HealthWarning
 		}
-		checks = append(checks, HealthCheck{Name: "InnoDB log waits", Value: ratio, Display: fmt.Sprintf("%.2f%%", ratio), Status: status})
+		checks = append(checks, HealthCheck{Name: "InnoDB log waits", Value: &ratio, Display: fmt.Sprintf("%.2f%%", ratio), Status: status})
 	}
 
 	if openFiles, limit, ok := statusAndVariable(snapshot, "Open_files", "open_files_limit"); ok && limit > 0 {
@@ -81,7 +81,7 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 		if ratio >= 85 {
 			status = HealthWarning
 		}
-		checks = append(checks, HealthCheck{Name: "Open files", Value: ratio, Display: fmt.Sprintf("%.0f / %.0f (%.2f%%)", openFiles, limit, ratio), Status: status})
+		checks = append(checks, HealthCheck{Name: "Open files", Value: &ratio, Display: fmt.Sprintf("%.0f / %.0f (%.2f%%)", openFiles, limit, ratio), Status: status})
 	}
 
 	if passes, scans, ok := values(snapshot.Status, "Sort_merge_passes", "Sort_scan"); ok {
@@ -93,7 +93,7 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 			} else if ratio >= 10 {
 				status = HealthWarning
 			}
-			checks = append(checks, HealthCheck{Name: "Sort merge passes", Value: ratio, Display: fmt.Sprintf("%.2f%%", ratio), Status: status})
+			checks = append(checks, HealthCheck{Name: "Sort merge passes", Value: &ratio, Display: fmt.Sprintf("%.2f%%", ratio), Status: status})
 		}
 	}
 
@@ -113,7 +113,7 @@ func EvaluateHealth(snapshot HealthSnapshot) []HealthCheck {
 			if minutes < 45 || minutes > 75 {
 				status = HealthWarning
 			}
-			checks = append(checks, HealthCheck{Name: "InnoDB redo log", Value: minutes, Display: fmt.Sprintf("%.1f min", minutes), Status: status})
+			checks = append(checks, HealthCheck{Name: "InnoDB redo log", Value: &minutes, Display: fmt.Sprintf("%.1f min", minutes), Status: status})
 		}
 	}
 
@@ -127,7 +127,7 @@ func connectionCheck(name string, connections, maxConnections, usage float64) He
 	} else if usage > 70 {
 		status = HealthWarning
 	}
-	return HealthCheck{Name: name, Value: usage, Display: fmt.Sprintf("%.0f / %.0f (%.1f%%)", connections, maxConnections, usage), Status: status}
+	return HealthCheck{Name: name, Value: &usage, Display: fmt.Sprintf("%.0f / %.0f (%.1f%%)", connections, maxConnections, usage), Status: status}
 }
 
 func percentageCheck(name string, value, warning, critical float64) HealthCheck {
@@ -137,5 +137,5 @@ func percentageCheck(name string, value, warning, critical float64) HealthCheck 
 	} else if value < warning {
 		status = HealthWarning
 	}
-	return HealthCheck{Name: name, Value: value, Display: fmt.Sprintf("%.2f%%", value), Status: status}
+	return HealthCheck{Name: name, Value: &value, Display: fmt.Sprintf("%.2f%%", value), Status: status}
 }
