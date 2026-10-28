@@ -14,7 +14,9 @@ import (
 )
 
 func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
-	return runner.SectionCommand(ctx, opts, "allocation", "Show shard allocation per node", Render)
+	cmd := runner.SectionCommand(ctx, opts, "allocation", "Show shard allocation per node", Render)
+	cmd.AddCommand(newExplainCommand(ctx, opts))
+	return cmd
 }
 
 func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
