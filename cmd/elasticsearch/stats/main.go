@@ -37,7 +37,9 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				render(indices, previous, opts.Watch > 0)
+				if err := render(ctx, indices, previous, opts.Watch > 0); err != nil {
+					return err
+				}
 				previous = make(map[string]elasticsearch.IndexStatistics, len(indices))
 				for _, index := range indices {
 					previous[index.Name] = index
@@ -50,7 +52,7 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 	return cmd
 }
 
-func render(indices []elasticsearch.IndexStatistics, previous map[string]elasticsearch.IndexStatistics, watch bool) {
+func render(ctx context.Context, indices []elasticsearch.IndexStatistics, previous map[string]elasticsearch.IndexStatistics, watch bool) error {
 	tbl := table.New()
 	tbl.Title("Index statistics")
 	tbl.TitleSeparator(false)
@@ -60,6 +62,9 @@ func render(indices []elasticsearch.IndexStatistics, previous map[string]elastic
 		var searchMillis any = "-"
 		if a.Searches > 0 {
 			searchMillis = fmt.Sprintf("%.2f", float64(a.SearchTimeMillis)/float64(a.Searches))
+			if command.JSON(ctx) {
+				searchMillis = float64(a.SearchTimeMillis) / float64(a.Searches)
+			}
 		}
 		if watch {
 			searches, gets, indexed, deleted, searchMillis = "-", "-", "-", "-", "-"
@@ -69,15 +74,21 @@ func render(indices []elasticsearch.IndexStatistics, previous map[string]elastic
 					gets = fmt.Sprintf("%.2f", rates.Gets)
 					indexed = fmt.Sprintf("%.2f", rates.Indexed)
 					deleted = fmt.Sprintf("%.2f", rates.Deleted)
+					if command.JSON(ctx) {
+						searches, gets, indexed, deleted = rates.Searches, rates.Gets, rates.Indexed, rates.Deleted
+					}
 					if rates.Searches > 0 {
 						searchMillis = fmt.Sprintf("%.2f", rates.SearchMillis)
+						if command.JSON(ctx) {
+							searchMillis = rates.SearchMillis
+						}
 					}
 				}
 			}
 		}
 		tbl.Add(index.Name, index.Documents, index.PrimaryBytes, index.TotalBytes, searches, searchMillis, gets, indexed, deleted)
 	}
-	tbl.Column(0, table.Column{Name: "INDEX", MaxWidth: 40})
+	tbl.Column(0, table.Column{Name: "NAME", MaxWidth: 40})
 	tbl.Column(1, table.Column{Name: "DOCS", Alignment: table.Right})
 	tbl.Column(2, table.Column{Name: "SIZE", Format: table.Bytes, Alignment: table.Right})
 	tbl.Column(3, table.Column{Name: "TOTAL.SIZE", Format: table.Bytes, Alignment: table.Right})
@@ -93,12 +104,14 @@ func render(indices []elasticsearch.IndexStatistics, previous map[string]elastic
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.FitWidth(table.TerminalWidth())
-	tbl.Print()
+	if err := command.Print(ctx, tbl); err != nil {
+		return err
+	}
 	if len(indices) == 0 {
-		fmt.Println("  No open indices matched.")
+		command.Message(ctx, "  No open indices matched.")
 	}
 	if watch {
-		fmt.Println("  Rates: '-' means no comparable sample. SEARCH counts shard operations; INDEX includes updates.")
+		command.Message(ctx, "  Rates: '-' means no comparable sample. SEARCH counts shard operations; INDEX includes updates.")
 	}
-	fmt.Println()
+	return nil
 }

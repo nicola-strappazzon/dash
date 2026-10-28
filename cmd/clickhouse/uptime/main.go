@@ -57,8 +57,5 @@ func Render(ctx context.Context, ch *clickhouse.ClickHouse, cluster string) erro
 	tbl.Padding(3)
 	tbl.SortBy(0)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, tbl)
 }

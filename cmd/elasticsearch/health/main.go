@@ -2,7 +2,6 @@ package health
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/fatih/color"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/internal/runner"
@@ -80,8 +79,5 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 		},
 	})
 	row.SetWidth(table.TerminalWidth())
-	row.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, row)
 }

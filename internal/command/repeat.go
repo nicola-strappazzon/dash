@@ -16,7 +16,7 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 		defer stop()
 
 		for {
-			if opts.Clear {
+			if opts.Clear && !opts.JSON {
 				clearTerminal()
 			}
 

@@ -22,11 +22,10 @@ func Render(ctx context.Context, db *mysql.MySQL) error {
 		return err
 	}
 
-	printOverview(status)
-	return nil
+	return printOverview(ctx, status)
 }
 
-func printOverview(status mysql.InnoDBStatus) {
+func printOverview(ctx context.Context, status mysql.InnoDBStatus) error {
 	row := table.NewRow().Title("InnoDB")
 	row.Add(table.Field{
 		Name:  "History list length",
@@ -86,8 +85,7 @@ func printOverview(status mysql.InnoDBStatus) {
 		row.Add(table.Field{Name: "Checkpoint age", Value: status.LogSequenceNumber - status.LastCheckpoint, Format: table.Bytes})
 	}
 
-	row.Print()
-	fmt.Println("")
+	return command.Print(ctx, row)
 }
 
 func dirtyPagePercent(status mysql.InnoDBStatus) float64 {

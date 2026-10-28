@@ -2,7 +2,6 @@ package thread
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/internal/runner"
 	"github.com/nicola-strappazzon/dash/internal/command"
@@ -47,7 +46,5 @@ func renderSearchPool(ctx context.Context, es *elasticsearch.Elasticsearch) erro
 	tbl.Padding(3)
 	tbl.SortBy(0)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println()
-	return nil
+	return command.Print(ctx, tbl)
 }

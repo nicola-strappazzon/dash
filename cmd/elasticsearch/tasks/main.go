@@ -22,6 +22,9 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if command.JSON(ctx) {
+				return command.PrintJSON(detail)
+			}
 			encoder := json.NewEncoder(os.Stdout)
 			encoder.SetIndent("", "  ")
 			encoder.SetEscapeHTML(false)
@@ -76,10 +79,11 @@ func render(ctx context.Context, es *elasticsearch.Elasticsearch, subtasks bool)
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.FitWidth(table.TerminalWidth())
-	tbl.Print()
-	if hidden > 0 {
-		fmt.Printf("  %d subtasks hidden (use tasks --subtasks to include them)\n", hidden)
+	if err := command.Print(ctx, tbl); err != nil {
+		return err
 	}
-	fmt.Println("")
+	if hidden > 0 {
+		command.Message(ctx, "  %d subtasks hidden (use tasks --subtasks to include them)", hidden)
+	}
 	return nil
 }

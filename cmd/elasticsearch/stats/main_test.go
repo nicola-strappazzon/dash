@@ -102,7 +102,11 @@ func TestRender(t *testing.T) {
 		{"counter reset", true, reset, map[string]elasticsearch.IndexStatistics{before.Name: before}, "- - - - -"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			output := captureOutput(t, func() { render([]elasticsearch.IndexStatistics{tc.sample}, tc.previous, tc.watch) })
+			output := captureOutput(t, func() {
+				if err := render(context.Background(), []elasticsearch.IndexStatistics{tc.sample}, tc.previous, tc.watch); err != nil {
+					t.Fatal(err)
+				}
+			})
 			var row string
 			for _, line := range strings.Split(output, "\n") {
 				if strings.Contains(line, "example-a") {

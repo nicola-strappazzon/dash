@@ -140,8 +140,5 @@ func renderHot(ctx context.Context, es *elasticsearch.Elasticsearch, node string
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, tbl)
 }

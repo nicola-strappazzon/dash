@@ -2,7 +2,6 @@ package indices
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/fatih/color"
@@ -119,8 +118,5 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, tbl)
 }

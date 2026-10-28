@@ -43,6 +43,9 @@ func newExplainCommand(ctx context.Context, opts *command.Options) *cobra.Comman
 				if err != nil {
 					return err
 				}
+				if command.JSON(ctx) {
+					return command.PrintJSON(explanation)
+				}
 				renderExplanation(explanation)
 				return nil
 			})

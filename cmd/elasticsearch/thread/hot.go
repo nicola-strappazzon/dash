@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/internal/runner"
@@ -47,6 +48,13 @@ func renderHotThreads(ctx context.Context, es *elasticsearch.Elasticsearch, node
 		return err
 	}
 	defer body.Close()
+	if command.JSON(ctx) {
+		text, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		return command.PrintJSON(map[string]string{"title": "Hot threads", "text": string(text)})
+	}
 
 	scanner := bufio.NewScanner(body)
 	// bufio.Scanner's default 64KB buffer can be too small for hot_threads'

@@ -40,7 +40,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 	}
 
 	if indexFilter != "" && nodeFilter == "" {
-		return renderNodeSummary(shards, indexFilter)
+		return renderNodeSummary(ctx, shards, indexFilter)
 	}
 
 	tbl := table.New()
@@ -91,16 +91,13 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, tbl)
 }
 
 // renderNodeSummary groups shards by node, so you can compare how a given
 // index (or pattern, e.g. cr-*) is spread across the cluster at a glance,
 // instead of eyeballing a full per-shard listing.
-func renderNodeSummary(shards []elasticsearch.Shard, indexFilter string) error {
+func renderNodeSummary(ctx context.Context, shards []elasticsearch.Shard, indexFilter string) error {
 	type agg struct {
 		count int64
 		store float64
@@ -134,8 +131,5 @@ func renderNodeSummary(shards []elasticsearch.Shard, indexFilter string) error {
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, tbl)
 }

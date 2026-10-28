@@ -54,10 +54,7 @@ func renderRepositories(ctx context.Context, opts *command.Options) error {
 		tbl.Padding(3)
 		tbl.SortBy(0)
 		tbl.SetWidth(table.TerminalWidth())
-		tbl.Print()
-		fmt.Println("")
-
-		return nil
+		return command.Print(ctx, tbl)
 	})
 }
 
@@ -120,10 +117,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch, repository str
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, tbl)
 }
 
 func formatStringSetting(settings map[string]any, key string) string {

@@ -99,10 +99,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, tbl)
 }
 
 // addRows adds one row per allocation/recovery key found in scope, sorted by

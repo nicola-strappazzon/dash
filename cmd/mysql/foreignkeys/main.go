@@ -27,21 +27,21 @@ func Render(opts *command.Options) runner.RenderFunc {
 			if err != nil {
 				return err
 			}
-			printAllTable("MySQL foreign keys · "+opts.MySQL.Database, keys)
-			return nil
+			return printAllTable(ctx, "MySQL foreign keys · "+opts.MySQL.Database, keys)
 		}
 
 		report, err := db.ForeignKeys(ctx, opts.MySQL.Database, opts.MySQL.Table)
 		if err != nil {
 			return err
 		}
-		printTable("Foreign keys · "+opts.MySQL.Database+"."+opts.MySQL.Table+" → references", report.Outgoing)
-		printTable("Foreign keys · "+opts.MySQL.Database+"."+opts.MySQL.Table+" ← referenced by", report.Incoming)
-		return nil
+		if err := printTable(ctx, "Foreign keys · "+opts.MySQL.Database+"."+opts.MySQL.Table+" → references", report.Outgoing); err != nil {
+			return err
+		}
+		return printTable(ctx, "Foreign keys · "+opts.MySQL.Database+"."+opts.MySQL.Table+" ← referenced by", report.Incoming)
 	}
 }
 
-func printAllTable(title string, keys []mysql.ForeignKey) {
+func printAllTable(ctx context.Context, title string, keys []mysql.ForeignKey) error {
 	tbl := table.New()
 	tbl.Title(title)
 	for _, key := range keys {
@@ -58,11 +58,10 @@ func printAllTable(title string, keys []mysql.ForeignKey) {
 	tbl.Padding(2)
 	tbl.FitWidth(table.TerminalWidth())
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
+	return command.Print(ctx, tbl)
 }
 
-func printTable(title string, keys []mysql.ForeignKey) {
+func printTable(ctx context.Context, title string, keys []mysql.ForeignKey) error {
 	tbl := table.New()
 	tbl.Title(title)
 	for _, key := range keys {
@@ -78,6 +77,5 @@ func printTable(title string, keys []mysql.ForeignKey) {
 	tbl.Padding(2)
 	tbl.FitWidth(table.TerminalWidth())
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
+	return command.Print(ctx, tbl)
 }

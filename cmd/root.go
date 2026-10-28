@@ -15,6 +15,7 @@ const appVersion = "0.1.0"
 
 func NewRootCommand(ctx context.Context) *cobra.Command {
 	opts := &command.Options{}
+	ctx = command.WithJSON(ctx, &opts.JSON)
 	cmd := &cobra.Command{
 		Use:           "dash",
 		Short:         "Terminal services dashboard",
@@ -23,6 +24,7 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	}
 	cmd.PersistentFlags().DurationVarP(&opts.Watch, "watch", "w", 0, "repeat command every duration, e.g. 5s or 1m")
 	cmd.PersistentFlags().BoolVarP(&opts.Clear, "clear", "c", false, "clear terminal before each run")
+	cmd.PersistentFlags().BoolVar(&opts.JSON, "json", false, "emit JSON instead of tables (one document per line for multiple views or --watch)")
 
 	cmd.AddCommand(
 		clickhouse.NewCommand(ctx, opts),

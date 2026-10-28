@@ -92,6 +92,9 @@ func putClusterSettings(ctx context.Context, es *elasticsearch.Elasticsearch, va
 		if err != nil {
 			return err
 		}
+		if command.JSON(ctx) {
+			return command.PrintJSON(map[string]any{"dry_run": true, "method": "PUT", "path": "/_cluster/settings", "body": json.RawMessage(payload)})
+		}
 		fmt.Println(color.YellowString("Dry run (nothing applied). This is what would be sent to PUT _cluster/settings:"))
 		fmt.Println(string(payload))
 		fmt.Println(color.YellowString("Re-run with --yes to apply it."))
@@ -103,7 +106,9 @@ func putClusterSettings(ctx context.Context, es *elasticsearch.Elasticsearch, va
 		return err
 	}
 
-	printAcknowledged(acknowledged)
+	if err := printAcknowledged(ctx, acknowledged); err != nil {
+		return err
+	}
 
 	return Render(ctx, es)
 }
@@ -117,6 +122,9 @@ func putIndexSettings(ctx context.Context, es *elasticsearch.Elasticsearch, inde
 		if err != nil {
 			return err
 		}
+		if command.JSON(ctx) {
+			return command.PrintJSON(map[string]any{"dry_run": true, "method": "PUT", "path": "/" + index + "/_settings", "body": json.RawMessage(payload)})
+		}
 		fmt.Println(color.YellowString("Dry run (nothing applied). This is what would be sent to PUT %s/_settings:", index))
 		fmt.Println(string(payload))
 		fmt.Println(color.YellowString("Re-run with --yes to apply it."))
@@ -128,7 +136,9 @@ func putIndexSettings(ctx context.Context, es *elasticsearch.Elasticsearch, inde
 		return err
 	}
 
-	printAcknowledged(acknowledged)
+	if err := printAcknowledged(ctx, acknowledged); err != nil {
+		return err
+	}
 
 	keys := make([]string, 0, len(values))
 	for key := range values {
@@ -138,13 +148,17 @@ func putIndexSettings(ctx context.Context, es *elasticsearch.Elasticsearch, inde
 	return printIndexSettingValues(ctx, es, index, keys)
 }
 
-func printAcknowledged(acknowledged bool) {
+func printAcknowledged(ctx context.Context, acknowledged bool) error {
+	if command.JSON(ctx) {
+		return command.PrintJSON(map[string]bool{"acknowledged": acknowledged})
+	}
 	if acknowledged {
 		fmt.Println(color.GreenString("✓ applied"))
 	} else {
 		fmt.Println(color.RedString("✗ Elasticsearch didn't acknowledge the change (acknowledged: false)"))
 	}
 	fmt.Println("")
+	return nil
 }
 
 // printIndexSettingValues fetches and prints the current value of keys on
@@ -155,6 +169,9 @@ func printIndexSettingValues(ctx context.Context, es *elasticsearch.Elasticsearc
 	perIndex, err := es.IndexSettingValues(ctx, index, keys)
 	if err != nil {
 		return err
+	}
+	if command.JSON(ctx) {
+		return command.PrintJSON(map[string]any{"indices": perIndex})
 	}
 
 	indexNames := make([]string, 0, len(perIndex))
@@ -186,7 +203,7 @@ func warnIfUnknownIndex(ctx context.Context, es *elasticsearch.Elasticsearch, in
 		return err
 	}
 	if !exists {
-		fmt.Println(color.YellowString("⚠ couldn't find an index named %q in the cluster.", index))
+		command.Message(ctx, "%s", color.YellowString("⚠ couldn't find an index named %q in the cluster.", index))
 	}
 
 	return nil
@@ -211,7 +228,7 @@ func warnIfUnknownNode(ctx context.Context, es *elasticsearch.Elasticsearch, nam
 	for i, n := range nodes {
 		names[i] = n.Name
 	}
-	fmt.Println(color.YellowString("⚠ couldn't find a node named %q in the cluster. Current nodes: %v", name, names))
+	command.Message(ctx, "%s", color.YellowString("⚠ couldn't find a node named %q in the cluster. Current nodes: %v", name, names))
 
 	return nil
 }

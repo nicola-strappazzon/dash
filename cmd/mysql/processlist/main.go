@@ -2,7 +2,6 @@ package processlist
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/nicola-strappazzon/dash/cmd/mysql/internal/runner"
 	"github.com/nicola-strappazzon/dash/internal/command"
@@ -42,8 +41,6 @@ func Render(opts *command.Options) runner.RenderFunc {
 		tbl.Padding(2)
 		tbl.FitWidth(table.TerminalWidth())
 		tbl.SetWidth(table.TerminalWidth())
-		tbl.Print()
-		fmt.Println("")
-		return nil
+		return command.Print(ctx, tbl)
 	}
 }

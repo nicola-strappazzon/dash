@@ -2,7 +2,6 @@ package allocation
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/fatih/color"
 	"github.com/nicola-strappazzon/dash/cmd/elasticsearch/internal/runner"
@@ -66,8 +65,5 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
-
-	return nil
+	return command.Print(ctx, tbl)
 }

@@ -23,16 +23,20 @@ func Render(ctx context.Context, db *mysql.MySQL) error {
 		return err
 	}
 	if !isReplica {
+		if command.JSON(ctx) {
+			return command.PrintJSON(map[string]bool{"is_replica": false})
+		}
 		fmt.Println("MySQL server is not configured as a replica.")
 		return nil
 	}
 
-	printChecks(report.Checks)
-	printStatus(report.Status)
-	return nil
+	if err := printChecks(ctx, report.Checks); err != nil {
+		return err
+	}
+	return printStatus(ctx, report.Status)
 }
 
-func printChecks(checks []mysql.HealthCheck) {
+func printChecks(ctx context.Context, checks []mysql.HealthCheck) error {
 	tbl := table.New()
 	tbl.Title("MySQL replication")
 	for _, check := range checks {
@@ -45,11 +49,10 @@ func printChecks(checks []mysql.HealthCheck) {
 	tbl.Padding(3)
 	tbl.FitWidth(table.TerminalWidth())
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
+	return command.Print(ctx, tbl)
 }
 
-func printStatus(status mysql.ReplicationStatus) {
+func printStatus(ctx context.Context, status mysql.ReplicationStatus) error {
 	tbl := table.New()
 	tbl.Title("Replication coordinates")
 	tbl.Add("Source", fmt.Sprintf("%s:%d", status.SourceHost, status.SourcePort))
@@ -70,8 +73,7 @@ func printStatus(status mysql.ReplicationStatus) {
 	tbl.Padding(3)
 	tbl.FitWidth(table.TerminalWidth())
 	tbl.SetWidth(table.TerminalWidth())
-	tbl.Print()
-	fmt.Println("")
+	return command.Print(ctx, tbl)
 }
 
 func statusColors() []table.ColorRule {
