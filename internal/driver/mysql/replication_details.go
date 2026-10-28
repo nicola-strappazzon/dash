@@ -7,18 +7,19 @@ import (
 )
 
 type ReplicationStatus struct {
-	SourceHost         string
-	SourcePort         int64
-	SourceLogFile      string
-	ReadSourceLogPos   int64
-	RelaySourceLogFile string
-	ExecSourceLogPos   int64
-	RelayLogFile       string
-	RelayLogPos        int64
-	RelayLogSpace      int64
-	AutoPosition       bool
-	RetrievedGTIDSet   string
-	ExecutedGTIDSet    string
+	SecondsBehindSource string
+	SourceHost          string
+	SourcePort          int64
+	SourceLogFile       string
+	ReadSourceLogPos    int64
+	RelaySourceLogFile  string
+	ExecSourceLogPos    int64
+	RelayLogFile        string
+	RelayLogPos         int64
+	RelayLogSpace       int64
+	AutoPosition        bool
+	RetrievedGTIDSet    string
+	ExecutedGTIDSet     string
 }
 
 type ReplicationReport struct {
@@ -44,18 +45,19 @@ func (m *MySQL) ReplicationDetails(ctx context.Context) (ReplicationReport, bool
 
 func replicationStatus(status map[string]string) ReplicationStatus {
 	return ReplicationStatus{
-		SourceHost:         firstStatus(status, "Source_Host", "Master_Host"),
-		SourcePort:         statusInt(status, "Source_Port", "Master_Port"),
-		SourceLogFile:      firstStatus(status, "Source_Log_File", "Master_Log_File"),
-		ReadSourceLogPos:   statusInt(status, "Read_Source_Log_Pos", "Read_Master_Log_Pos"),
-		RelaySourceLogFile: firstStatus(status, "Relay_Source_Log_File", "Relay_Master_Log_File"),
-		ExecSourceLogPos:   statusInt(status, "Exec_Source_Log_Pos", "Exec_Master_Log_Pos"),
-		RelayLogFile:       firstStatus(status, "Relay_Log_File"),
-		RelayLogPos:        statusInt(status, "Relay_Log_Pos"),
-		RelayLogSpace:      statusInt(status, "Relay_Log_Space"),
-		AutoPosition:       statusInt(status, "Auto_Position") == 1,
-		RetrievedGTIDSet:   firstStatus(status, "Retrieved_Gtid_Set"),
-		ExecutedGTIDSet:    firstStatus(status, "Executed_Gtid_Set"),
+		SecondsBehindSource: firstStatus(status, "Seconds_Behind_Source", "Seconds_Behind_Master"),
+		SourceHost:          firstStatus(status, "Source_Host", "Master_Host"),
+		SourcePort:          statusInt(status, "Source_Port", "Master_Port"),
+		SourceLogFile:       firstStatus(status, "Source_Log_File", "Master_Log_File"),
+		ReadSourceLogPos:    statusInt(status, "Read_Source_Log_Pos", "Read_Master_Log_Pos"),
+		RelaySourceLogFile:  firstStatus(status, "Relay_Source_Log_File", "Relay_Master_Log_File"),
+		ExecSourceLogPos:    statusInt(status, "Exec_Source_Log_Pos", "Exec_Master_Log_Pos"),
+		RelayLogFile:        firstStatus(status, "Relay_Log_File"),
+		RelayLogPos:         statusInt(status, "Relay_Log_Pos"),
+		RelayLogSpace:       statusInt(status, "Relay_Log_Space"),
+		AutoPosition:        statusInt(status, "Auto_Position") == 1,
+		RetrievedGTIDSet:    firstStatus(status, "Retrieved_Gtid_Set"),
+		ExecutedGTIDSet:     firstStatus(status, "Executed_Gtid_Set"),
 	}
 }
 
