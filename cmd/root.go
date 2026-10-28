@@ -25,7 +25,7 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	cmd.PersistentFlags().DurationVarP(&opts.Watch, "watch", "w", 0, "repeat command every duration, e.g. 5s or 1m")
 	cmd.PersistentFlags().BoolVarP(&opts.Clear, "clear", "c", false, "clear terminal before each run")
 	cmd.PersistentFlags().StringVar(&opts.Format, "format", "table", "output format: table, json or csv")
-	cmd.PersistentFlags().StringVar(&opts.Metric, "metric", "", "select a metric name or column (case-insensitive; raw values)")
+	cmd.PersistentFlags().StringVar(&opts.Metric, "metric", "", "select comma-separated metric names or columns (case-insensitive; raw values)")
 	cmd.PersistentFlags().BoolVar(&opts.Timestamp, "timestamp", false, "prepend a Unix timestamp in seconds to CSV records")
 
 	cmd.RegisterFlagCompletionFunc("format", func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {

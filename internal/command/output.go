@@ -21,7 +21,7 @@ type outputKey struct{}
 
 type output struct {
 	options   *Options
-	matched   bool
+	metrics   map[string]bool
 	csvHeader string
 }
 
@@ -155,57 +155,78 @@ func flatten(fields map[string]any, path string, value any) {
 func (out *output) print(w io.Writer, doc document, columns []string, now time.Time) error {
 	opts := out.options
 	metric := strings.TrimSpace(opts.Metric)
-	scalar := false
 	if metric != "" {
-		// Key/value views select a row by its label; ordinary tables select a column.
-		label := ""
+		var selected []string
+		labels := ""
 		for _, column := range columns {
 			switch column {
 			case "METRIC", "CHECK", "VARIABLE", "STATUS", "KEY":
-				if label == "" && slices.Contains(columns, "VALUE") {
-					label = column
+				if labels == "" && slices.Contains(columns, "VALUE") {
+					labels = column
 				}
 			}
 		}
-		selected := ""
-		if label != "" {
-			rows := make([]map[string]any, 0)
+		names := metricNames(metric)
+		namedRows := false
+		if labels != "" {
 			for _, row := range doc.Rows {
-				if strings.EqualFold(fmt.Sprint(row[label]), metric) {
-					rows = append(rows, row)
-				}
-			}
-			if len(rows) > 0 {
-				doc.Rows = rows
-				selected = "VALUE"
-				scalar = true
-			}
-		}
-		if selected == "" {
-			for _, column := range columns {
-				if strings.EqualFold(column, metric) {
-					selected = column
-					break
+				for _, name := range names {
+					if strings.EqualFold(fmt.Sprint(row[labels]), name) {
+						namedRows = true
+					}
 				}
 			}
 		}
-		if selected == "" {
+		values := make(map[string]any)
+		for _, name := range names {
+			found := false
+			if namedRows {
+				for _, row := range doc.Rows {
+					if strings.EqualFold(fmt.Sprint(row[labels]), name) {
+						values[name] = row["VALUE"]
+						selected = append(selected, name)
+						found = true
+						break
+					}
+				}
+			}
+			if !found && !namedRows {
+				for _, column := range columns {
+					if strings.EqualFold(column, name) {
+						selected = append(selected, column)
+						found = true
+						break
+					}
+				}
+			}
+			if found {
+				if out.metrics == nil {
+					out.metrics = make(map[string]bool)
+				}
+				out.metrics[strings.ToLower(name)] = true
+			}
+		}
+		if len(selected) == 0 {
 			return nil
-		} // Another section may contain the metric.
-		out.matched = true
-		selectedColumns := []string{selected}
-		if !scalar && opts.Format == "csv" && len(columns) > 1 && columns[0] != selected {
-			selectedColumns = []string{columns[0], selected}
-		}
-		columns = selectedColumns
-		for i, row := range doc.Rows {
-			fields := make(map[string]any, len(columns))
-			for _, column := range columns {
-				fields[column] = row[column]
+		} // Another section may contain the metrics.
+		if len(values) > 0 {
+			// Named key/value metrics become one record in the requested order.
+			doc.Rows = []map[string]any{values}
+		} else {
+			if opts.Format == "csv" && len(columns) > 1 && !slices.Contains(selected, columns[0]) {
+				selected = append([]string{columns[0]}, selected...)
 			}
-			doc.Rows[i] = fields
+			for i, row := range doc.Rows {
+				fields := make(map[string]any, len(selected))
+				for _, column := range selected {
+					fields[column] = row[column]
+				}
+				doc.Rows[i] = fields
+			}
 		}
+		columns = selected
 	}
+
 	if opts.Format == "json" {
 		return json.NewEncoder(w).Encode(doc)
 	}
@@ -271,4 +292,19 @@ func Message(ctx context.Context, format string, args ...any) {
 		writer = os.Stderr
 	}
 	fmt.Fprintf(writer, format+"\n", args...)
+}
+
+// metricNames preserves the requested column order and ignores duplicate names.
+func metricNames(value string) []string {
+	var names []string
+	seen := make(map[string]bool)
+	for _, part := range strings.Split(value, ",") {
+		name := strings.TrimSpace(part)
+		key := strings.ToLower(name)
+		if name != "" && !seen[key] {
+			names = append(names, name)
+			seen[key] = true
+		}
+	}
+	return names
 }

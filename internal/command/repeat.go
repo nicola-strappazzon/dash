@@ -16,7 +16,7 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 		if opts.Format != "" && opts.Format != "table" && opts.Format != "json" && opts.Format != "csv" {
 			return fmt.Errorf("invalid --format %q: choose table, json or csv", opts.Format)
 		}
-		if cmd.Flags().Changed("metric") && strings.TrimSpace(opts.Metric) == "" {
+		if cmd.Flags().Changed("metric") && len(metricNames(opts.Metric)) == 0 {
 			return fmt.Errorf("--metric requires a metric name")
 		}
 		if opts.Timestamp && opts.Format != "csv" {
@@ -32,7 +32,7 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 		defer stop()
 
 		for {
-			out.matched = false
+			out.metrics = make(map[string]bool)
 			if opts.Clear && !Machine(ctx) {
 				clearTerminal()
 			}
@@ -41,8 +41,10 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 				return err
 			}
 
-			if opts.Metric != "" && !out.matched {
-				return fmt.Errorf("unknown metric %q", opts.Metric)
+			for _, name := range metricNames(opts.Metric) {
+				if !out.metrics[strings.ToLower(name)] {
+					return fmt.Errorf("unknown metric %q", name)
+				}
 			}
 
 			if opts.Watch <= 0 {

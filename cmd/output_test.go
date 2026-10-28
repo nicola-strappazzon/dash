@@ -24,6 +24,7 @@ func TestOutputValidation(t *testing.T) {
 		{[]string{"version", "--format", "json", "--metric", "version", "--timestamp"}, "--timestamp requires"},
 		{[]string{"version", "--metric", "missing"}, "unknown metric"},
 		{[]string{"version", "--json"}, "unknown flag"},
+		{[]string{"version", "--metric", ", ,"}, "--metric requires"},
 	} {
 		out, _, err := captureCommand(t, tt.args)
 		if err == nil || !strings.Contains(err.Error(), tt.want) || out != "" {
@@ -61,6 +62,8 @@ func TestGlobalCSVAndMetric(t *testing.T) {
 		{"plain metric", []string{"allocation", "--metric", "disk.avail"}, "4096\n"},
 		{"csv metric", []string{"allocation", "--format", "csv", "--metric", "DISK.AVAIL"}, "\"node,a\",4096\n"},
 		{"vertical metric", []string{"health", "--metric", "number_of_nodes"}, "3\n"},
+		{"multiple columns", []string{"allocation", "--format", "csv", "--metric", "SHARDS,DISK.AVAIL"}, "\"node,a\",5,4096\n"},
+		{"multiple vertical fields", []string{"health", "--metric", "number_of_nodes,Name"}, "3,example\n"},
 		{"multiple sections", []string{"health", "allocation", "--metric", "DISK.AVAIL"}, "4096\n"},
 		{"nested metric", []string{"tasks", "--describe", "node:1", "--metric", "response.created"}, "9007199254740993\n"},
 		{"explain metric", []string{"allocation", "explain", "--index", "example-a", "--shard", "0", "--metric", "can_allocate"}, "throttled\n"},

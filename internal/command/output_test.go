@@ -85,8 +85,8 @@ func TestMetricAcrossViews(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if !out.matched || buf.String() != "0\n" {
-		t.Fatalf("matched %v, output %q", out.matched, buf.String())
+	if !out.metrics["lag"] || buf.String() != "0\n" {
+		t.Fatalf("matched %v, output %q", out.metrics["lag"], buf.String())
 	}
 }
 
@@ -97,5 +97,49 @@ func TestTableColumns(t *testing.T) {
 	tbl.SortBy(0)
 	if got := tbl.outputColumns(); !reflect.DeepEqual(got, []string{"HOST", "LAG"}) {
 		t.Fatal(got)
+	}
+}
+
+func TestMultipleMetrics(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		opts    Options
+		columns []string
+		rows    []map[string]any
+		want    string
+	}{
+		{"status counters", Options{Format: "csv", Metric: "Table_locks_waited,Table_locks_immediate", Timestamp: true}, []string{"STATUS", "VALUE"}, []map[string]any{{"STATUS": "Table_locks_immediate", "VALUE": "12000"}, {"STATUS": "Table_locks_waited", "VALUE": "2"}}, "1793188800,2,12000\n"},
+		{"variables", Options{Format: "csv", Metric: " max_connections, autocommit "}, []string{"VARIABLE", "VALUE"}, []map[string]any{{"VARIABLE": "autocommit", "VALUE": "ON"}, {"VARIABLE": "max_connections", "VALUE": "100"}}, "100,ON\n"},
+		{"replication", Options{Format: "csv", Metric: "Replication lag,Auto position"}, []string{"METRIC", "VALUE"}, []map[string]any{{"METRIC": "Auto position", "VALUE": "1"}, {"METRIC": "Replication lag", "VALUE": "0"}}, "0,1\n"},
+		{"table columns", Options{Format: "csv", Metric: "QUEUE,ACTIVE"}, []string{"NODE", "ACTIVE", "QUEUE"}, []map[string]any{{"NODE": "a", "ACTIVE": 2, "QUEUE": 3}}, "a,3,2\n"},
+		{"plain multiple values", Options{Metric: "QUEUE,ACTIVE"}, []string{"NODE", "ACTIVE", "QUEUE"}, []map[string]any{{"NODE": "a", "ACTIVE": 2, "QUEUE": 3}}, "3,2\n"},
+		{"deduplicate", Options{Format: "csv", Metric: "ACTIVE, active,ACTIVE"}, []string{"NODE", "ACTIVE"}, []map[string]any{{"NODE": "a", "ACTIVE": 2}}, "a,2\n"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf strings.Builder
+			out := &output{options: &tt.opts}
+			if err := out.print(&buf, document{Rows: tt.rows}, tt.columns, time.Unix(1793188800, 0)); err != nil {
+				t.Fatal(err)
+			}
+			if got := buf.String(); got != tt.want {
+				t.Fatalf("got %q; want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMultipleJSONMetrics(t *testing.T) {
+	out := &output{options: &Options{Format: "json", Metric: "A,B"}}
+	var buf strings.Builder
+	rows := []map[string]any{{"METRIC": "B", "VALUE": 2}, {"METRIC": "A", "VALUE": 1}}
+	if err := out.print(&buf, document{Rows: rows}, []string{"METRIC", "VALUE"}, time.Time{}); err != nil {
+		t.Fatal(err)
+	}
+	var doc document
+	if err := json.Unmarshal([]byte(buf.String()), &doc); err != nil {
+		t.Fatal(err)
+	}
+	if len(doc.Rows) != 1 || doc.Rows[0]["A"] != float64(1) || doc.Rows[0]["B"] != float64(2) {
+		t.Fatalf("invalid metrics: %s", buf.String())
 	}
 }
