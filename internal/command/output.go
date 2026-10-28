@@ -22,6 +22,7 @@ type outputKey struct{}
 type output struct {
 	options   *Options
 	metrics   map[string]bool
+	delta     deltaTracker
 	csvHeader string
 }
 
@@ -42,7 +43,7 @@ func JSON(ctx context.Context) bool { return outputFrom(ctx).options.Format == "
 // Machine reports whether stdout is reserved for unformatted data.
 func Machine(ctx context.Context) bool {
 	opts := outputFrom(ctx).options
-	return opts.Format == "json" || opts.Format == "csv" || opts.Metric != ""
+	return opts.Format == "json" || opts.Format == "csv" || opts.Metric != "" || outputFrom(ctx).warmingUp()
 }
 
 // Both go-table tables and vertical rows implement this output boundary.
@@ -57,6 +58,12 @@ type document struct {
 }
 
 func Print(ctx context.Context, view printable) error {
+	out := outputFrom(ctx)
+	if out.options.Delta {
+		if tbl, ok := view.(*Table); ok {
+			out.delta.apply(tbl)
+		}
+	}
 	if !Machine(ctx) {
 		view.Print()
 		fmt.Println()
@@ -94,7 +101,7 @@ func Print(ctx context.Context, view printable) error {
 // table. Nested values use dotted paths for CSV columns and metric selection.
 func PrintData(ctx context.Context, value any) error {
 	out := outputFrom(ctx)
-	if JSON(ctx) && out.options.Metric == "" {
+	if JSON(ctx) && out.options.Metric == "" && !out.warmingUp() {
 		return PrintJSON(value)
 	}
 	data, err := json.Marshal(value)
@@ -227,6 +234,10 @@ func (out *output) print(w io.Writer, doc document, columns []string, now time.T
 		columns = selected
 	}
 
+	if out.warmingUp() {
+		return nil
+	}
+
 	if opts.Format == "json" {
 		return json.NewEncoder(w).Encode(doc)
 	}
@@ -287,6 +298,9 @@ func PrintJSON(value any) error { return json.NewEncoder(os.Stdout).Encode(value
 
 // Message keeps supplementary text out of machine-readable stdout.
 func Message(ctx context.Context, format string, args ...any) {
+	if outputFrom(ctx).warmingUp() {
+		return
+	}
 	writer := os.Stdout
 	if Machine(ctx) {
 		writer = os.Stderr
@@ -308,3 +322,5 @@ func metricNames(value string) []string {
 	}
 	return names
 }
+
+func (out *output) warmingUp() bool { return out.options.Delta && out.delta.previous == nil }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"net/http"
@@ -24,6 +25,8 @@ func TestOutputValidation(t *testing.T) {
 		{[]string{"version", "--format", "json", "--metric", "version", "--timestamp"}, "--timestamp requires"},
 		{[]string{"version", "--metric", "missing"}, "unknown metric"},
 		{[]string{"version", "--json"}, "unknown flag"},
+		{[]string{"version", "--delta"}, "--delta requires --watch"},
+		{[]string{"version", "--delta", "--watch", "0s"}, "--delta requires --watch"},
 		{[]string{"version", "--metric", ", ,"}, "--metric requires"},
 	} {
 		out, _, err := captureCommand(t, tt.args)
@@ -132,7 +135,7 @@ func TestGlobalOutputFlagsInherited(t *testing.T) {
 	var visit func(*cobra.Command)
 	visit = func(cmd *cobra.Command) {
 		for _, child := range cmd.Commands() {
-			for _, flag := range []string{"format", "metric", "timestamp"} {
+			for _, flag := range []string{"format", "metric", "timestamp", "delta"} {
 				if child.InheritedFlags().Lookup(flag) == nil {
 					t.Errorf("%s lacks --%s", child.CommandPath(), flag)
 				}
@@ -144,4 +147,66 @@ func TestGlobalOutputFlagsInherited(t *testing.T) {
 		}
 	}
 	visit(root)
+}
+
+func TestDeltaWatchFormats(t *testing.T) {
+	for _, format := range []string{"table", "json", "csv"} {
+		t.Run(format, func(t *testing.T) {
+			requests := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("X-Elastic-Product", "Elasticsearch")
+				requests++
+				if requests == 4 {
+					w.WriteHeader(403)
+					fmt.Fprint(w, `{"error":"forbidden"}`)
+					return
+				}
+				// The first cumulative value is deliberately large. ACTIVE is a gauge.
+				fmt.Fprintf(w, `[{"node_name":"data-a","name":"write","active":"%d","queue":"0","rejected":"%d","size":"4"}]`, 4-requests, 1000000+requests*3)
+			}))
+			defer server.Close()
+			args := []string{"elasticsearch", "--address", server.URL, "thread", "show", "--delta", "--watch", "1ms", "--format", format}
+			out, _, err := captureCommand(t, args)
+			if err == nil || !strings.Contains(err.Error(), "403") {
+				t.Fatalf("expected polling error, got %v", err)
+			}
+			if strings.Contains(out, "1000003") || strings.Contains(out, "1000006") {
+				t.Fatalf("printed a cumulative counter: %s", out)
+			}
+			switch format {
+			case "csv":
+				records, err := csv.NewReader(strings.NewReader(out)).ReadAll()
+				if err != nil || len(records) != 3 {
+					t.Fatalf("first sample was not skipped: %q, %v", out, err)
+				}
+				if records[1][2] != "2" || records[2][2] != "1" || records[1][4] != "3" || records[2][4] != "3" {
+					t.Fatalf("incorrect gauges/deltas: %q", out)
+				}
+			case "json":
+				docs := jsonDocuments(t, out)
+				if len(docs) != 2 {
+					t.Fatalf("first sample was not skipped: %s", out)
+				}
+				for i, doc := range docs {
+					var rows []map[string]any
+					if err := json.Unmarshal(doc["rows"], &rows); err != nil {
+						t.Fatal(err)
+					}
+					if rows[0]["ACTIVE"] != float64(2-i) || rows[0]["REJECTED"] != float64(3) {
+						t.Fatalf("incorrect gauges/deltas: %s", out)
+					}
+				}
+			case "table":
+				var rows []string
+				for _, line := range strings.Split(out, "\n") {
+					if strings.Contains(line, "data-a") {
+						rows = append(rows, strings.Join(strings.Fields(line), " "))
+					}
+				}
+				if len(rows) != 2 || rows[0] != "data-a write 2 0 3 4" || rows[1] != "data-a write 1 0 3 4" {
+					t.Fatalf("incorrect table samples: %q", rows)
+				}
+			}
+		})
+	}
 }

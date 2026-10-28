@@ -31,6 +31,9 @@ func Render(opts *command.Options) runner.RenderFunc {
 		tbl.Title(title)
 		for _, variable := range status {
 			tbl.Add(variable.Name, variable.Value)
+			if variable.IsCounter() {
+				tbl.Counter(1, variable.Name)
+			}
 		}
 		tbl.Column(0, table.Column{Name: "STATUS"})
 		tbl.Column(1, table.Column{Name: "VALUE", MaxWidth: table.TerminalWidth()})

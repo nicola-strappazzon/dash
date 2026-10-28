@@ -11,7 +11,10 @@ import (
 // Rendering, sorting and filtering remain the responsibility of go-table.
 type Table struct {
 	table.Table
-	columns map[int]string
+	columns  map[int]string
+	title    string
+	counters map[int][]string
+	identity []int
 }
 
 func NewTable() *Table {
@@ -34,3 +37,22 @@ func (t *Table) outputColumns() []string {
 	}
 	return columns
 }
+
+func (t *Table) Title(title string) table.Table {
+	t.title = title
+	t.Table.Title(title)
+	return t
+}
+
+// Counter marks a cumulative integer column. Labels restrict it to named rows
+// in a key/value table; with no labels, every row in the column is a counter.
+func (t *Table) Counter(column int, labels ...string) {
+	if t.counters == nil {
+		t.counters = make(map[int][]string)
+	}
+	t.counters[column] = append(t.counters[column], labels...)
+}
+
+// Identity selects the columns that identify a series across samples.
+// Tables use their first column by default.
+func (t *Table) Identity(columns ...int) { t.identity = columns }

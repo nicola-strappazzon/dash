@@ -41,6 +41,9 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 
 	tbl := command.NewTable()
 	tbl.Title("SLM policies")
+	for _, column := range []int{7, 8, 9, 10} {
+		tbl.Counter(column)
+	}
 	tbl.TitleSeparator(false)
 	for _, p := range policies {
 		tbl.Add(

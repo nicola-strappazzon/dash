@@ -6,6 +6,7 @@ type Options struct {
 	Format        string
 	Metric        string
 	Timestamp     bool
+	Delta         bool
 	Clear         bool
 	Watch         time.Duration
 	ClickHouse    ClickHouseOptions

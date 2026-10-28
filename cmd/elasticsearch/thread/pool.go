@@ -35,6 +35,7 @@ func renderSearchPool(ctx context.Context, es *elasticsearch.Elasticsearch) erro
 
 	tbl := command.NewTable()
 	tbl.Title("Search thread pool")
+	tbl.Counter(3)
 	for _, p := range pools {
 		tbl.Add(p.NodeName, parse.Int(p.Active), parse.Int(p.Queue), parse.Int(p.Rejected))
 	}

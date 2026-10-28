@@ -28,6 +28,8 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	cmd.PersistentFlags().StringVar(&opts.Metric, "metric", "", "select comma-separated metric names or columns (case-insensitive; raw values)")
 	cmd.PersistentFlags().BoolVar(&opts.Timestamp, "timestamp", false, "prepend a Unix timestamp in seconds to CSV records")
 
+	cmd.PersistentFlags().BoolVar(&opts.Delta, "delta", false, "show changes between watch samples for known counters; keep gauges unchanged")
+
 	cmd.RegisterFlagCompletionFunc("format", func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
 		return []string{"table", "json", "csv"}, cobra.ShellCompDirectiveNoFileComp
 	})

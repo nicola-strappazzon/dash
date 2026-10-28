@@ -27,12 +27,18 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 				return fmt.Errorf("--timestamp requires --format csv")
 			}
 		}
+		if opts.Delta && opts.Watch <= 0 {
+			return fmt.Errorf("--delta requires --watch with a positive duration")
+		}
 		out := outputFrom(ctx)
 		ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 		defer stop()
 
 		for {
 			out.metrics = make(map[string]bool)
+			if opts.Delta {
+				out.delta.begin()
+			}
 			if opts.Clear && !Machine(ctx) {
 				clearTerminal()
 			}
@@ -45,6 +51,9 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 				if !out.metrics[strings.ToLower(name)] {
 					return fmt.Errorf("unknown metric %q", name)
 				}
+			}
+			if opts.Delta {
+				out.delta.end()
 			}
 
 			if opts.Watch <= 0 {
