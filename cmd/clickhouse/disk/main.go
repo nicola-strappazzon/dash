@@ -35,7 +35,7 @@ func Render(ctx context.Context, ch *clickhouse.ClickHouse, cluster string) erro
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Disk space")
 	for _, d := range disks {
 		tbl.Add(d.Host, int64(d.Free), int64(d.Total), d.UsedPercent)

@@ -3,7 +3,9 @@ package command
 import "time"
 
 type Options struct {
-	JSON          bool
+	Format        string
+	Metric        string
+	Timestamp     bool
 	Clear         bool
 	Watch         time.Duration
 	ClickHouse    ClickHouseOptions

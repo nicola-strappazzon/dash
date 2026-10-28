@@ -48,12 +48,12 @@ func renderHotThreads(ctx context.Context, es *elasticsearch.Elasticsearch, node
 		return err
 	}
 	defer body.Close()
-	if command.JSON(ctx) {
+	if command.Machine(ctx) {
 		text, err := io.ReadAll(body)
 		if err != nil {
 			return err
 		}
-		return command.PrintJSON(map[string]string{"title": "Hot threads", "text": string(text)})
+		return command.PrintData(ctx, map[string]string{"title": "Hot threads", "text": string(text)})
 	}
 
 	scanner := bufio.NewScanner(body)

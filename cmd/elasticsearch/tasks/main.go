@@ -22,8 +22,8 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if command.JSON(ctx) {
-				return command.PrintJSON(detail)
+			if command.Machine(ctx) {
+				return command.PrintData(ctx, detail)
 			}
 			encoder := json.NewEncoder(os.Stdout)
 			encoder.SetIndent("", "  ")
@@ -53,7 +53,7 @@ func render(ctx context.Context, es *elasticsearch.Elasticsearch, subtasks bool)
 	if err != nil {
 		return err
 	}
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Active tasks")
 	tbl.TitleSeparator(false)
 	hidden := 0

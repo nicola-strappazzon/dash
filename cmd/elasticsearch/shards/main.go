@@ -43,7 +43,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 		return renderNodeSummary(ctx, shards, indexFilter)
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Shards")
 	tbl.TitleSeparator(false)
 	for _, s := range shards {
@@ -118,7 +118,7 @@ func renderNodeSummary(ctx context.Context, shards []elasticsearch.Shard, indexF
 		return byNode[nodes[i]].count > byNode[nodes[j]].count
 	})
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title(fmt.Sprintf("Shards per node for %s", indexFilter))
 	for _, node := range nodes {
 		tbl.Add(node, byNode[node].count, byNode[node].store)

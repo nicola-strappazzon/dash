@@ -27,7 +27,7 @@ func Render(opts *command.Options) runner.RenderFunc {
 		if opts.MySQL.VariableLike != "" {
 			title += " · " + opts.MySQL.VariableLike
 		}
-		tbl := table.New()
+		tbl := command.NewTable()
 		tbl.Title(title)
 		for _, variable := range variables {
 			tbl.Add(variable.Name, variable.Value)

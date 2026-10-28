@@ -35,7 +35,7 @@ func Render(ctx context.Context, ch *clickhouse.ClickHouse, cluster string) erro
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Replication health")
 	for _, r := range replicas {
 		tbl.Add(

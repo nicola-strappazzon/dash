@@ -35,7 +35,7 @@ func Render(ctx context.Context, ch *clickhouse.ClickHouse, cluster string) erro
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Cluster uptime")
 	for _, u := range uptime {
 		tbl.Add(u.Host, int64(u.UptimeSeconds), u.Version)

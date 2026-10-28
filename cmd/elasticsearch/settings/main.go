@@ -67,7 +67,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Allocation Settings")
 	tbl.TitleSeparator(false)
 	seen := map[string]bool{}

@@ -27,7 +27,7 @@ func Render(opts *command.Options) runner.RenderFunc {
 			return err
 		}
 
-		tbl := table.New()
+		tbl := command.NewTable()
 		tbl.Title("MySQL AUTO_INCREMENT overflow · " + opts.MySQL.Database)
 		for _, column := range columns {
 			tbl.Add(column.Table, column.Column, column.ColumnType, column.CurrentValue, column.MaxValue, column.UsagePercent, column.Remaining)

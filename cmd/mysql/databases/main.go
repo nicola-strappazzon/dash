@@ -20,7 +20,7 @@ func Render(ctx context.Context, db *mysql.MySQL) error {
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("MySQL databases")
 	for _, database := range databases {
 		tbl.Add(database.Name, database.Tables, database.SizeBytes, database.Charset, database.Collation)

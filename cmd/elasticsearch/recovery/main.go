@@ -23,7 +23,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Recovery")
 	tbl.TitleSeparator(false)
 	for _, r := range recoveries {

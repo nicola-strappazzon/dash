@@ -36,7 +36,7 @@ func renderRepositories(ctx context.Context, opts *command.Options) error {
 			})
 		}
 
-		tbl := table.New()
+		tbl := command.NewTable()
 		tbl.Title("Snapshot repositories")
 		for _, repository := range repositories {
 			tbl.Add(
@@ -76,7 +76,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch, repository str
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Snapshots")
 	for _, s := range snapshots {
 		tbl.Add(

@@ -39,7 +39,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("SLM policies")
 	tbl.TitleSeparator(false)
 	for _, p := range policies {

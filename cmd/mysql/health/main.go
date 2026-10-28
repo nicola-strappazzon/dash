@@ -28,7 +28,7 @@ func Render(ctx context.Context, db *mysql.MySQL) error {
 		Status:  mysql.HealthOK,
 	}}, checks...)
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("MySQL health")
 	tbl.TitleSeparator(false)
 	for _, check := range checks {

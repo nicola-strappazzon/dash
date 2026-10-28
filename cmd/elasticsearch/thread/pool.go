@@ -33,7 +33,7 @@ func renderSearchPool(ctx context.Context, es *elasticsearch.Elasticsearch) erro
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Search thread pool")
 	for _, p := range pools {
 		tbl.Add(p.NodeName, parse.Int(p.Active), parse.Int(p.Queue), parse.Int(p.Rejected))

@@ -53,7 +53,7 @@ func NewCommand(ctx context.Context, opts *command.Options) *cobra.Command {
 }
 
 func render(ctx context.Context, indices []elasticsearch.IndexStatistics, previous map[string]elasticsearch.IndexStatistics, watch bool) error {
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Index statistics")
 	tbl.TitleSeparator(false)
 	for _, index := range indices {
@@ -62,7 +62,7 @@ func render(ctx context.Context, indices []elasticsearch.IndexStatistics, previo
 		var searchMillis any = "-"
 		if a.Searches > 0 {
 			searchMillis = fmt.Sprintf("%.2f", float64(a.SearchTimeMillis)/float64(a.Searches))
-			if command.JSON(ctx) {
+			if command.Machine(ctx) {
 				searchMillis = float64(a.SearchTimeMillis) / float64(a.Searches)
 			}
 		}
@@ -74,12 +74,12 @@ func render(ctx context.Context, indices []elasticsearch.IndexStatistics, previo
 					gets = fmt.Sprintf("%.2f", rates.Gets)
 					indexed = fmt.Sprintf("%.2f", rates.Indexed)
 					deleted = fmt.Sprintf("%.2f", rates.Deleted)
-					if command.JSON(ctx) {
+					if command.Machine(ctx) {
 						searches, gets, indexed, deleted = rates.Searches, rates.Gets, rates.Indexed, rates.Deleted
 					}
 					if rates.Searches > 0 {
 						searchMillis = fmt.Sprintf("%.2f", rates.SearchMillis)
-						if command.JSON(ctx) {
+						if command.Machine(ctx) {
 							searchMillis = rates.SearchMillis
 						}
 					}

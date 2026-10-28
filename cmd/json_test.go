@@ -105,7 +105,7 @@ func TestGlobalJSON(t *testing.T) {
 		{"settings dry run", []string{"settings", "set", "cluster.routing.allocation.enable", "all"}, 1, `"dry_run":true`, ""},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			args := append([]string{"--json", "elasticsearch", "--address", server.URL}, tc.args...)
+			args := append([]string{"--format", "json", "elasticsearch", "--address", server.URL}, tc.args...)
 			stdout, stderr, err := captureCommand(t, args)
 			if err != nil {
 				t.Fatal(err)
@@ -124,7 +124,7 @@ func TestGlobalJSON(t *testing.T) {
 			}
 		})
 	}
-	stdout, _, err := captureCommand(t, []string{"version", "--json"})
+	stdout, _, err := captureCommand(t, []string{"version", "--format", "json"})
 	if err != nil || len(jsonDocuments(t, stdout)) != 1 || !strings.Contains(stdout, `"version"`) {
 		t.Fatalf("version JSON: %s, %v", stdout, err)
 	}
@@ -143,7 +143,7 @@ func TestJSONWatchIgnoresClear(t *testing.T) {
 		fmt.Fprintf(w, `{"_shards":{"failed":0},"indices":{"example-a":{"uuid":"same","primaries":{"indexing":{"index_total":%d}},"total":{"search":{"query_total":%d}},"shards":{}}}}`, requests, requests)
 	}))
 	defer server.Close()
-	out, diagnostics, err := captureCommand(t, []string{"elasticsearch", "--address", server.URL, "stats", "--json", "--watch", "1ms", "--clear"})
+	out, diagnostics, err := captureCommand(t, []string{"elasticsearch", "--address", server.URL, "stats", "--format", "json", "--watch", "1ms", "--clear"})
 	if err == nil || !strings.Contains(err.Error(), "403") {
 		t.Fatalf("expected polling error, got %v", err)
 	}

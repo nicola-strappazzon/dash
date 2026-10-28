@@ -92,8 +92,8 @@ func putClusterSettings(ctx context.Context, es *elasticsearch.Elasticsearch, va
 		if err != nil {
 			return err
 		}
-		if command.JSON(ctx) {
-			return command.PrintJSON(map[string]any{"dry_run": true, "method": "PUT", "path": "/_cluster/settings", "body": json.RawMessage(payload)})
+		if command.Machine(ctx) {
+			return command.PrintData(ctx, map[string]any{"dry_run": true, "method": "PUT", "path": "/_cluster/settings", "body": json.RawMessage(payload)})
 		}
 		fmt.Println(color.YellowString("Dry run (nothing applied). This is what would be sent to PUT _cluster/settings:"))
 		fmt.Println(string(payload))
@@ -122,8 +122,8 @@ func putIndexSettings(ctx context.Context, es *elasticsearch.Elasticsearch, inde
 		if err != nil {
 			return err
 		}
-		if command.JSON(ctx) {
-			return command.PrintJSON(map[string]any{"dry_run": true, "method": "PUT", "path": "/" + index + "/_settings", "body": json.RawMessage(payload)})
+		if command.Machine(ctx) {
+			return command.PrintData(ctx, map[string]any{"dry_run": true, "method": "PUT", "path": "/" + index + "/_settings", "body": json.RawMessage(payload)})
 		}
 		fmt.Println(color.YellowString("Dry run (nothing applied). This is what would be sent to PUT %s/_settings:", index))
 		fmt.Println(string(payload))
@@ -149,8 +149,8 @@ func putIndexSettings(ctx context.Context, es *elasticsearch.Elasticsearch, inde
 }
 
 func printAcknowledged(ctx context.Context, acknowledged bool) error {
-	if command.JSON(ctx) {
-		return command.PrintJSON(map[string]bool{"acknowledged": acknowledged})
+	if command.Machine(ctx) {
+		return command.PrintData(ctx, map[string]bool{"acknowledged": acknowledged})
 	}
 	if acknowledged {
 		fmt.Println(color.GreenString("✓ applied"))
@@ -170,8 +170,8 @@ func printIndexSettingValues(ctx context.Context, es *elasticsearch.Elasticsearc
 	if err != nil {
 		return err
 	}
-	if command.JSON(ctx) {
-		return command.PrintJSON(map[string]any{"indices": perIndex})
+	if command.Machine(ctx) {
+		return command.PrintData(ctx, map[string]any{"indices": perIndex})
 	}
 
 	indexNames := make([]string, 0, len(perIndex))

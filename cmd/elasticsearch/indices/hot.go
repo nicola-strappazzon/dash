@@ -87,7 +87,7 @@ func renderHot(ctx context.Context, es *elasticsearch.Elasticsearch, node string
 		return loadI > loadJ
 	})
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title(fmt.Sprintf("Hot indices on %s", node))
 	for _, r := range rows {
 		tbl.Add(

@@ -55,7 +55,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 		return err
 	}
 
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title("Write thread pool")
 	tbl.TitleSeparator(false)
 	for _, p := range pools {

@@ -29,7 +29,7 @@ func Render(opts *command.Options) runner.RenderFunc {
 			return err
 		}
 
-		tbl := table.New()
+		tbl := command.NewTable()
 		title := "MySQL tables · " + opts.MySQL.Database
 		if opts.MySQL.TablesLike != "" {
 			title += " · " + opts.MySQL.TablesLike

@@ -42,7 +42,7 @@ func Render(opts *command.Options) runner.RenderFunc {
 }
 
 func printAllTable(ctx context.Context, title string, keys []mysql.ForeignKey) error {
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title(title)
 	for _, key := range keys {
 		tbl.Add(key.Constraint, key.Table, key.Column, key.OtherTable, key.OtherColumn, key.OnUpdate, key.OnDelete)
@@ -62,7 +62,7 @@ func printAllTable(ctx context.Context, title string, keys []mysql.ForeignKey) e
 }
 
 func printTable(ctx context.Context, title string, keys []mysql.ForeignKey) error {
-	tbl := table.New()
+	tbl := command.NewTable()
 	tbl.Title(title)
 	for _, key := range keys {
 		tbl.Add(key.Constraint, key.Column, key.OtherTable, key.OtherColumn, key.OnUpdate, key.OnDelete)

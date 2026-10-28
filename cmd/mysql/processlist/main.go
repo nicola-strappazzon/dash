@@ -24,7 +24,7 @@ func Render(opts *command.Options) runner.RenderFunc {
 			return err
 		}
 
-		tbl := table.New()
+		tbl := command.NewTable()
 		tbl.Title("MySQL processlist")
 		for _, process := range processes {
 			tbl.Add(process.ID, process.User, process.Host, process.Database, process.Command, process.Time, process.State, process.Info)

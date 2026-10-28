@@ -43,8 +43,8 @@ func newExplainCommand(ctx context.Context, opts *command.Options) *cobra.Comman
 				if err != nil {
 					return err
 				}
-				if command.JSON(ctx) {
-					return command.PrintJSON(explanation)
+				if command.Machine(ctx) {
+					return command.PrintData(ctx, explanation)
 				}
 				renderExplanation(explanation)
 				return nil
@@ -104,7 +104,7 @@ func renderExplanation(e *elasticsearch.AllocationExplanation) {
 	printDecisions("Current node", e.CanRemainDecisions)
 	printDecisions("Cluster rebalance", e.CanRebalanceDecisions)
 	if len(e.NodeDecisions) > 0 {
-		tbl := table.New()
+		tbl := command.NewTable()
 		tbl.Title("Node decisions")
 		tbl.TitleSeparator(false)
 		for _, node := range e.NodeDecisions {

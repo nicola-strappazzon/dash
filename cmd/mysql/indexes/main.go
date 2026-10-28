@@ -33,7 +33,7 @@ func Render(opts *command.Options) runner.RenderFunc {
 			return err
 		}
 
-		tbl := table.New()
+		tbl := command.NewTable()
 		tbl.Title("MySQL indexes · " + opts.MySQL.Database + "." + opts.MySQL.Table)
 		for _, index := range indexes {
 			unique := "NO"
