@@ -33,8 +33,8 @@ go run . mysql -h 127.0.0.1 -u monitor -p '<password>' variables --like 'innodb%
 go run . mysql -h 127.0.0.1 -u monitor -p '<password>' status --like 'Threads%'
 ```
 
-Use `--watch 5s` to refresh a view and `--clear` to clear the terminal before
-each refresh. MySQL index size is shown as `—` when the server does not expose
+Use `--watch 5s` to refresh a view. Table output clears the terminal automatically
+before each refresh; `--clear` also clears it for a single execution. MySQL index size is shown as `—` when the server does not expose
 `mysql.innodb_index_stats` to the connected user.
 
 ## Development
