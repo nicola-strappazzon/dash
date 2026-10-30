@@ -39,7 +39,7 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 			if opts.Delta {
 				out.delta.begin()
 			}
-			if (opts.Clear || opts.Watch > 0) && !Machine(ctx) {
+			if opts.Clear && !Machine(ctx) {
 				clearTerminal()
 			}
 
