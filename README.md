@@ -34,7 +34,9 @@ go run . mysql -h 127.0.0.1 -u monitor -p '<password>' status --like 'Threads%'
 ```
 
 Use `--watch 5s` to refresh a view and `--clear` to clear the terminal before
-each refresh. MySQL index size is shown as `—` when the server does not expose
+each refresh. With `--watch --clear`, table output uses the terminal’s alternate
+screen so refreshes do not accumulate in scrollback; the previous screen is
+restored on exit. MySQL index size is shown as `—` when the server does not expose
 `mysql.innodb_index_stats` to the connected user.
 
 ## Development

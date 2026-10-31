@@ -33,6 +33,12 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 		out := outputFrom(ctx)
 		ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 		defer stop()
+		alternateScreen := false
+		defer func() {
+			if alternateScreen {
+				fmt.Print("\033[?1049l")
+			}
+		}()
 
 		for {
 			out.metrics = make(map[string]bool)
@@ -40,6 +46,10 @@ func Repeat(ctx context.Context, opts *Options, run func(*cobra.Command, []strin
 				out.delta.begin()
 			}
 			if opts.Clear && !Machine(ctx) {
+				if opts.Watch > 0 && !alternateScreen {
+					fmt.Print("\033[?1049h")
+					alternateScreen = true
+				}
 				clearTerminal()
 			}
 

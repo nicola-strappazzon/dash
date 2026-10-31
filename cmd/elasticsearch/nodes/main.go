@@ -39,7 +39,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 		)
 	}
 	tbl.Column(0, table.Column{Name: "ID"})
-	tbl.Column(1, table.Column{Name: "NAME"})
+	tbl.Column(1, table.Column{Name: "NAME", MaxWidth: table.TerminalWidth(), TruncateLeft: true})
 	tbl.Column(2, table.Column{Name: "IP"})
 	tbl.Column(3, table.Column{Name: "MASTER", Alignment: table.Center})
 	tbl.Column(4, table.Column{Name: "HEAP", Format: table.Percentage, Alignment: table.Right, Width: 5})
@@ -80,6 +80,7 @@ func Render(ctx context.Context, es *elasticsearch.Elasticsearch) error {
 	tbl.Margin(table.Margin{Left: 2})
 	tbl.Padding(3)
 	tbl.SortBy(1)
+	tbl.FitWidth(table.TerminalWidth())
 	tbl.SetWidth(table.TerminalWidth())
 	return command.Print(ctx, tbl)
 }
